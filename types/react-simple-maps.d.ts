@@ -15,6 +15,18 @@ declare module "react-simple-maps" {
     children?: ReactNode;
   }
 
+  interface ZoomableGroupProps {
+    center?: [number, number];
+    zoom?: number;
+    minZoom?: number;
+    maxZoom?: number;
+    onMoveStart?: (position: { coordinates: [number, number]; zoom: number }) => void;
+    onMove?: (position: { coordinates: [number, number]; zoom: number }) => void;
+    onMoveEnd?: (position: { coordinates: [number, number]; zoom: number }) => void;
+    translateExtent?: [[number, number], [number, number]];
+    children?: ReactNode;
+  }
+
   interface GeographiesProps {
     geography: string | object;
     children: (data: { geographies: GeographyType[] }) => ReactNode;
@@ -43,7 +55,7 @@ declare module "react-simple-maps" {
   interface MarkerProps {
     coordinates: [number, number];
     key?: string;
-    onMouseEnter?: () => void;
+    onMouseEnter?: (e: React.MouseEvent) => void;
     onMouseLeave?: () => void;
     onClick?: () => void;
     children?: ReactNode;
@@ -57,16 +69,13 @@ declare module "react-simple-maps" {
     strokeWidth?: number;
     strokeOpacity?: number;
     strokeLinecap?: string;
+    className?: string;
   }
 
   export const ComposableMap: ComponentType<ComposableMapProps>;
+  export const ZoomableGroup: ComponentType<ZoomableGroupProps>;
   export const Geographies: ComponentType<GeographiesProps>;
   export const Geography: ComponentType<GeographyProps>;
   export const Marker: ComponentType<MarkerProps>;
   export const Line: ComponentType<LineProps>;
-  export const ZoomableGroup: ComponentType<{
-    center?: [number, number];
-    zoom?: number;
-    children?: ReactNode;
-  }>;
 }
