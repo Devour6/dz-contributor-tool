@@ -34,3 +34,25 @@ export function getSnapshotUrl(epoch: number): string {
 export function getFeeCsvUrl(epoch: number): string {
   return FEE_CSV_URL_TEMPLATE.replace("{N}", epoch.toString());
 }
+
+// Contributor code → full display name mapping
+export const CONTRIBUTOR_NAMES: Record<string, string> = {
+  "jump_": "Jump Crypto",
+  "dgt": "DGT (Digital Assets AG)",
+  "tsw": "Teraswitch",
+  "glxy": "Galaxy Digital",
+  "stakefac": "Stake Facility",
+  "cherry": "Cherry Servers",
+  "rox": "RockawayX",
+  "s3v": "S3V",
+  "laconic": "Laconic",
+  "infiber": "InFiber",
+  "cdrw": "Cedarwood",
+  "latitude": "Latitude.sh",
+  "velia": "Velia.net",
+  "allnodes": "Allnodes",
+};
+
+export function getContributorDisplayName(code: string): string {
+  return CONTRIBUTOR_NAMES[code] || code;
+}

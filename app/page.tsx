@@ -14,6 +14,7 @@ import {
 import { ContributorTable } from "@/components/contributors/contributor-table";
 import { LinkSimulator } from "@/components/simulator/link-simulator";
 import { ContributorCalculator } from "@/components/calculator/contributor-calculator";
+import { NetworkMap } from "@/components/network-map";
 import { useSnapshot } from "@/lib/hooks/use-snapshot";
 import { useFees } from "@/lib/hooks/use-fees";
 import { useEpochs } from "@/lib/hooks/use-epochs";
@@ -113,7 +114,7 @@ export default function Home() {
               />
               <SummaryCard
                 icon={<Coins className="size-4" />}
-                label="Avg Fee/Epoch"
+                label="Avg Fee/Epoch (est.)"
                 value={
                   feesLoading
                     ? "..."
@@ -121,6 +122,7 @@ export default function Home() {
                     ? `${formatSolFromSol(avgFee)} SOL`
                     : "—"
                 }
+                footnote="Based on historical data — fees currently paused"
               />
             </div>
 
@@ -128,6 +130,7 @@ export default function Home() {
             <Tabs defaultValue="contributors">
               <TabsList variant="line" className="mb-6">
                 <TabsTrigger value="contributors">Contributors</TabsTrigger>
+                <TabsTrigger value="map">Network Map</TabsTrigger>
                 <TabsTrigger value="simulator">Link Simulator</TabsTrigger>
                 <TabsTrigger value="calculator">
                   Contributor Calculator
@@ -139,6 +142,10 @@ export default function Home() {
                   contributors={snapshot.contributors}
                   feeHistory={feeHistory}
                 />
+              </TabsContent>
+
+              <TabsContent value="map">
+                <NetworkMap snapshot={snapshot} />
               </TabsContent>
 
               <TabsContent value="simulator">
@@ -172,10 +179,12 @@ function SummaryCard({
   icon,
   label,
   value,
+  footnote,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
+  footnote?: string;
 }) {
   return (
     <Card className="bg-cream-5 border-cream-8">
@@ -185,6 +194,9 @@ function SummaryCard({
           <span className="text-xs">{label}</span>
         </div>
         <p className="text-2xl font-display text-cream">{value}</p>
+        {footnote && (
+          <p className="text-[10px] text-amber-400/70 mt-1">{footnote}</p>
+        )}
       </CardContent>
     </Card>
   );

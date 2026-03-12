@@ -14,8 +14,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ContributorDetail } from "./contributor-detail";
 import { formatPercent, formatSolFromSol } from "@/lib/utils/format";
-import { CONTRIBUTOR_SHARE } from "@/lib/constants/config";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { CONTRIBUTOR_SHARE, getContributorDisplayName } from "@/lib/constants/config";
+import { ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
 
 interface ContributorTableProps {
   contributors: Contributor[];
@@ -32,6 +32,11 @@ export function ContributorTable({
   const avgFee = feeHistory?.averageFeeSol || 0;
 
   return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 rounded-lg bg-amber-500/5 border border-amber-500/20 px-3 py-2 text-xs text-amber-400">
+        <AlertTriangle className="size-3.5 shrink-0" />
+        <span>Fee and reward data are estimates based on historical epochs (859–938). DZ fees are currently paused — actual future rewards may differ significantly.</span>
+      </div>
     <Table>
       <TableHeader>
         <TableRow className="border-cream-8 hover:bg-transparent">
@@ -70,7 +75,7 @@ export function ContributorTable({
                 )}
               </TableCell>
               <TableCell className="font-medium text-cream">
-                {c.code}
+                {getContributorDisplayName(c.code)}
               </TableCell>
               <TableCell className="text-right text-cream-60">
                 {c.deviceCount}
@@ -114,5 +119,6 @@ export function ContributorTable({
         )}
       </TableBody>
     </Table>
+    </div>
   );
 }

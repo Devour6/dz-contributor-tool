@@ -34,7 +34,7 @@ import {
   computeFeeTrend,
 } from "@/lib/utils/reward-estimator";
 import { CONTRIBUTOR_SHARE } from "@/lib/constants/config";
-import { ArrowRight, TrendingUp, TrendingDown, Minus, DollarSign } from "lucide-react";
+import { ArrowRight, TrendingUp, TrendingDown, Minus, DollarSign, AlertTriangle } from "lucide-react";
 
 interface ContributorCalculatorProps {
   snapshot: ParsedSnapshot;
@@ -93,6 +93,12 @@ export function ContributorCalculator({
 
   return (
     <div className="space-y-6">
+      {/* Mock data warning */}
+      <div className="flex items-center gap-2 rounded-lg bg-amber-500/5 border border-amber-500/20 px-3 py-2 text-xs text-amber-400">
+        <AlertTriangle className="size-3.5 shrink-0" />
+        <span>All projections use historical fee data (epochs 859–938). DZ fees are currently paused and transitioning to a shred-based economy — actual future rewards will differ.</span>
+      </div>
+
       {/* Link builder */}
       <Card className="bg-cream-5 border-cream-8">
         <CardHeader>
@@ -153,6 +159,7 @@ export function ContributorCalculator({
           <CardHeader>
             <CardTitle className="font-display text-sm tracking-wide text-cream">
               Revenue Projection
+              <span className="ml-2 text-xs text-amber-400 font-normal font-body">(estimated — mock data)</span>
             </CardTitle>
           </CardHeader>
           <CardContent>

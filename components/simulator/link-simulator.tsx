@@ -21,8 +21,8 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { formatPercent, formatSolFromSol, formatNumber } from "@/lib/utils/format";
-import { CONTRIBUTOR_SHARE } from "@/lib/constants/config";
-import { ArrowRight, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { CONTRIBUTOR_SHARE, getContributorDisplayName } from "@/lib/constants/config";
+import { ArrowRight, TrendingUp, TrendingDown, Minus, AlertTriangle } from "lucide-react";
 
 interface LinkSimulatorProps {
   snapshot: ParsedSnapshot;
@@ -32,7 +32,8 @@ interface LinkSimulatorProps {
 export function LinkSimulator({ snapshot, feeHistory }: LinkSimulatorProps) {
   const [selectedContributor, setSelectedContributor] = useState<string>("");
   const [selectedLink, setSelectedLink] = useState<string>("");
-  const [selectedDestination, setSelectedDestination] = useState<string>("");
+  const [newOrigin, setNewOrigin] = useState<string>("");
+  const [newDestination, setNewDestination] = useState<string>("");
 
   const contributor = snapshot.contributors.find(
     (c) => c.code === selectedContributor
@@ -42,9 +43,22 @@ export function LinkSimulator({ snapshot, feeHistory }: LinkSimulatorProps) {
 
   const avgFee = feeHistory?.averageFeeSol || 0;
 
-  // Compute demand delta if a new destination is selected
+  // Pre-fill new origin/destination when a link is selected
+  const handleLinkChange = (pubkey: string) => {
+    setSelectedLink(pubkey);
+    const l = contributor?.links.find((lk) => lk.pubkey === pubkey);
+    if (l) {
+      setNewOrigin(l.sideA.locationCode);
+      setNewDestination(l.sideZ.locationCode);
+    } else {
+      setNewOrigin("");
+      setNewDestination("");
+    }
+  };
+
+  // Compute demand delta when either endpoint changes
   const rewardDelta = useMemo(() => {
-    if (!contributor || !link || !selectedDestination) return null;
+    if (!contributor || !link || !newOrigin || !newDestination) return null;
 
     const currentDemandA =
       snapshot.cityDemands.find(
@@ -54,13 +68,17 @@ export function LinkSimulator({ snapshot, feeHistory }: LinkSimulatorProps) {
       snapshot.cityDemands.find(
         (d) => d.locationCode === link.sideZ.locationCode
       )?.demandScore || 0;
-    const newDemand =
+    const newDemandA =
       snapshot.cityDemands.find(
-        (d) => d.locationCode === selectedDestination
+        (d) => d.locationCode === newOrigin
+      )?.demandScore || 0;
+    const newDemandZ =
+      snapshot.cityDemands.find(
+        (d) => d.locationCode === newDestination
       )?.demandScore || 0;
 
     const currentAvg = (currentDemandA + currentDemandZ) / 2;
-    const newAvg = (currentDemandA + newDemand) / 2; // keeping side A, switching side Z
+    const newAvg = (newDemandA + newDemandZ) / 2;
 
     const totalDemand = snapshot.cityDemands.reduce(
       (sum, d) => sum + d.demandScore,
@@ -69,7 +87,6 @@ export function LinkSimulator({ snapshot, feeHistory }: LinkSimulatorProps) {
 
     if (totalDemand === 0) return null;
 
-    // Estimate: how much does our share change?
     const currentValue = currentAvg;
     const newValue = newAvg;
     const shareChange = (newValue - currentValue) / totalDemand;
@@ -82,10 +99,16 @@ export function LinkSimulator({ snapshot, feeHistory }: LinkSimulatorProps) {
       currentReward: contributor.estimatedShare * avgFee * CONTRIBUTOR_SHARE,
       newReward: newShare * avgFee * CONTRIBUTOR_SHARE,
     };
-  }, [contributor, link, selectedDestination, snapshot, avgFee]);
+  }, [contributor, link, newOrigin, newDestination, snapshot, avgFee]);
 
   return (
     <div className="space-y-6">
+      {/* Mock data warning */}
+      <div className="flex items-center gap-2 rounded-lg bg-amber-500/5 border border-amber-500/20 px-3 py-2 text-xs text-amber-400">
+        <AlertTriangle className="size-3.5 shrink-0" />
+        <span>Reward estimates use historical fee data (epochs 859–938). DZ fees are currently paused — projections are illustrative only.</span>
+      </div>
+
       {/* Controls */}
       <div className="flex flex-wrap items-end gap-4">
         <div className="space-y-1.5">
@@ -95,10 +118,11 @@ export function LinkSimulator({ snapshot, feeHistory }: LinkSimulatorProps) {
             onValueChange={(v) => {
               setSelectedContributor(v);
               setSelectedLink("");
-              setSelectedDestination("");
+              setNewOrigin("");
+              setNewDestination("");
             }}
           >
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Select contributor" />
             </SelectTrigger>
             <SelectContent>
@@ -107,7 +131,7 @@ export function LinkSimulator({ snapshot, feeHistory }: LinkSimulatorProps) {
                 .sort((a, b) => b.linkCount - a.linkCount)
                 .map((c) => (
                   <SelectItem key={c.code} value={c.code}>
-                    {c.code} ({c.linkCount} links)
+                    {getContributorDisplayName(c.code)} ({c.linkCount} links)
                   </SelectItem>
                 ))}
             </SelectContent>
@@ -116,16 +140,13 @@ export function LinkSimulator({ snapshot, feeHistory }: LinkSimulatorProps) {
 
         {contributor && (
           <div className="space-y-1.5">
-            <label className="text-xs text-cream-40">Link to Switch</label>
+            <label className="text-xs text-cream-40">Current Link</label>
             <Select
               value={selectedLink}
-              onValueChange={(v) => {
-                setSelectedLink(v);
-                setSelectedDestination("");
-              }}
+              onValueChange={handleLinkChange}
             >
               <SelectTrigger className="w-[300px]">
-                <SelectValue placeholder="Select link" />
+                <SelectValue placeholder="Select link to modify" />
               </SelectTrigger>
               <SelectContent>
                 {contributor.links.map((l) => (
@@ -138,43 +159,56 @@ export function LinkSimulator({ snapshot, feeHistory }: LinkSimulatorProps) {
             </Select>
           </div>
         )}
-
-        {link && (
-          <div className="space-y-1.5">
-            <label className="text-xs text-cream-40">New Destination</label>
-            <Select
-              value={selectedDestination}
-              onValueChange={setSelectedDestination}
-            >
-              <SelectTrigger className="w-[220px]">
-                <SelectValue placeholder="Select city" />
-              </SelectTrigger>
-              <SelectContent>
-                {snapshot.cityDemands
-                  .filter((d) => d.locationCode !== link.sideZ.locationCode)
-                  .map((d) => (
-                    <SelectItem key={d.locationCode} value={d.locationCode}>
-                      {d.locationName} ({d.country})
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
       </div>
 
-      {/* Current link info */}
+      {/* New origin + new destination selectors */}
       {link && (
         <Card className="bg-cream-5 border-cream-8">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-cream-60">Current Link</CardTitle>
+            <CardTitle className="text-sm text-cream-60">Modify Link Endpoints</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-3 text-cream">
-              <span>{link.sideA.city || link.sideA.locationCode}</span>
-              <ArrowRight className="size-4 text-cream-30" />
-              <span>{link.sideZ.city || link.sideZ.locationCode}</span>
-              <Badge variant="secondary">{link.linkType}</Badge>
+            <div className="flex flex-wrap items-end gap-4">
+              <div className="space-y-1.5">
+                <label className="text-xs text-cream-40">New Origin</label>
+                <Select value={newOrigin} onValueChange={setNewOrigin}>
+                  <SelectTrigger className="w-[220px]">
+                    <SelectValue placeholder="Select origin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {snapshot.cityDemands.map((d) => (
+                      <SelectItem key={d.locationCode} value={d.locationCode}>
+                        {d.locationName} ({d.country})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <ArrowRight className="size-4 text-cream-30 mb-2" />
+
+              <div className="space-y-1.5">
+                <label className="text-xs text-cream-40">New Destination</label>
+                <Select value={newDestination} onValueChange={setNewDestination}>
+                  <SelectTrigger className="w-[220px]">
+                    <SelectValue placeholder="Select destination" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {snapshot.cityDemands
+                      .filter((d) => d.locationCode !== newOrigin)
+                      .map((d) => (
+                        <SelectItem key={d.locationCode} value={d.locationCode}>
+                          {d.locationName} ({d.country})
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="mt-3 text-xs text-cream-20">
+              Currently: {link.sideA.city || link.sideA.locationCode} → {link.sideZ.city || link.sideZ.locationCode}
+              <Badge variant="secondary" className="ml-2">{link.linkType}</Badge>
             </div>
           </CardContent>
         </Card>
@@ -186,6 +220,7 @@ export function LinkSimulator({ snapshot, feeHistory }: LinkSimulatorProps) {
           <CardHeader className="pb-2">
             <CardTitle className="text-sm text-cream-60">
               Estimated Reward Change
+              <span className="ml-2 text-xs text-amber-400 font-normal">(mock data)</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
