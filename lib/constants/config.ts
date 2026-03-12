@@ -56,3 +56,25 @@ export const CONTRIBUTOR_NAMES: Record<string, string> = {
 export function getContributorDisplayName(code: string): string {
   return CONTRIBUTOR_NAMES[code] || code;
 }
+
+// Contributor code → color for map and cards
+export const CONTRIBUTOR_COLORS: Record<string, string> = {
+  jump_: "#FF6B6B",
+  dgt: "#4ECDC4",
+  tsw: "#45B7D1",
+  glxy: "#96CEB4",
+  stakefac: "#FFEAA7",
+  cherry: "#DDA0DD",
+  rox: "#98D8C8",
+  s3v: "#F7DC6F",
+  laconic: "#BB8FCE",
+  infiber: "#85C1E9",
+  cdrw: "#F0B27A",
+  latitude: "#82E0AA",
+  velia: "#F1948A",
+  allnodes: "#AED6F1",
+};
+
+export function getContributorColor(code: string): string {
+  return CONTRIBUTOR_COLORS[code] || "#F3EED9";
+}
