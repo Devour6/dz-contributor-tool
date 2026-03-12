@@ -1,65 +1,191 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
+import { Header } from "@/components/header";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ContributorTable } from "@/components/contributors/contributor-table";
+import { LinkSimulator } from "@/components/simulator/link-simulator";
+import { ContributorCalculator } from "@/components/calculator/contributor-calculator";
+import { useSnapshot } from "@/lib/hooks/use-snapshot";
+import { useFees } from "@/lib/hooks/use-fees";
+import { useEpochs } from "@/lib/hooks/use-epochs";
+import { formatNumber, formatSolFromSol } from "@/lib/utils/format";
+import { CONTRIBUTOR_SHARE } from "@/lib/constants/config";
+import { Users, Cable, MapPin, Coins, Loader2 } from "lucide-react";
 
 export default function Home() {
+  const { data: epochsData, isLoading: epochsLoading } = useEpochs();
+  const [selectedEpoch, setSelectedEpoch] = useState<number | null>(null);
+
+  // Auto-select latest epoch when data loads
+  useEffect(() => {
+    if (epochsData?.latest && selectedEpoch === null) {
+      setSelectedEpoch(epochsData.latest);
+    }
+  }, [epochsData, selectedEpoch]);
+
+  const { data: snapshot, isLoading: snapshotLoading } =
+    useSnapshot(selectedEpoch);
+  const { data: feeHistory, isLoading: feesLoading } = useFees();
+
+  const isLoading = epochsLoading || snapshotLoading;
+
+  const avgFee = feeHistory?.averageFeeSol || 0;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen bg-dark">
+      <Header />
+
+      <main className="mx-auto max-w-7xl px-6 py-6">
+        {/* Epoch selector */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="font-display text-lg tracking-wide text-cream">
+              Contributor Analytics
+            </h2>
+            {snapshot && (
+              <p className="text-sm text-cream-40 mt-1">
+                DZ Epoch {snapshot.dzEpoch} · Solana Epoch{" "}
+                {snapshot.solanaEpoch}
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="text-xs text-cream-40">Epoch</label>
+            <Select
+              value={selectedEpoch?.toString() || ""}
+              onValueChange={(v) => setSelectedEpoch(parseInt(v, 10))}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              <SelectTrigger className="w-[120px]" size="sm">
+                <SelectValue placeholder={epochsLoading ? "Loading..." : "Select"} />
+              </SelectTrigger>
+              <SelectContent>
+                {epochsData?.available.map((e) => (
+                  <SelectItem key={e} value={e.toString()}>
+                    Epoch {e}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+
+        {isLoading ? (
+          <div className="flex items-center justify-center py-32">
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="size-8 text-cream-30 animate-spin" />
+              <p className="text-sm text-cream-40">
+                Loading snapshot data...
+              </p>
+            </div>
+          </div>
+        ) : snapshot ? (
+          <>
+            {/* Summary cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <SummaryCard
+                icon={<Users className="size-4" />}
+                label="Contributors"
+                value={formatNumber(snapshot.contributors.length)}
+              />
+              <SummaryCard
+                icon={<Cable className="size-4" />}
+                label="Links"
+                value={formatNumber(
+                  snapshot.contributors.reduce(
+                    (sum, c) => sum + c.linkCount,
+                    0
+                  )
+                )}
+              />
+              <SummaryCard
+                icon={<MapPin className="size-4" />}
+                label="Locations"
+                value={formatNumber(snapshot.locations.length)}
+              />
+              <SummaryCard
+                icon={<Coins className="size-4" />}
+                label="Avg Fee/Epoch"
+                value={
+                  feesLoading
+                    ? "..."
+                    : avgFee > 0
+                    ? `${formatSolFromSol(avgFee)} SOL`
+                    : "—"
+                }
+              />
+            </div>
+
+            {/* Main tabs */}
+            <Tabs defaultValue="contributors">
+              <TabsList variant="line" className="mb-6">
+                <TabsTrigger value="contributors">Contributors</TabsTrigger>
+                <TabsTrigger value="simulator">Link Simulator</TabsTrigger>
+                <TabsTrigger value="calculator">
+                  Contributor Calculator
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="contributors">
+                <ContributorTable
+                  contributors={snapshot.contributors}
+                  feeHistory={feeHistory}
+                />
+              </TabsContent>
+
+              <TabsContent value="simulator">
+                <LinkSimulator
+                  snapshot={snapshot}
+                  feeHistory={feeHistory}
+                />
+              </TabsContent>
+
+              <TabsContent value="calculator">
+                <ContributorCalculator
+                  snapshot={snapshot}
+                  feeHistory={feeHistory}
+                />
+              </TabsContent>
+            </Tabs>
+          </>
+        ) : (
+          <div className="flex items-center justify-center py-32">
+            <p className="text-sm text-cream-40">
+              No data available. Try selecting a different epoch.
+            </p>
+          </div>
+        )}
       </main>
     </div>
+  );
+}
+
+function SummaryCard({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <Card className="bg-cream-5 border-cream-8">
+      <CardContent className="pt-6">
+        <div className="flex items-center gap-2 text-cream-40 mb-2">
+          {icon}
+          <span className="text-xs">{label}</span>
+        </div>
+        <p className="text-2xl font-display text-cream">{value}</p>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,26 +1,71 @@
 @import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@import "tw-animate-css";
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-cream: #F3EED9;
+  --color-dark: #0F0E0C;
+  --color-cream-5: rgba(243, 238, 217, 0.05);
+  --color-cream-8: rgba(243, 238, 217, 0.08);
+  --color-cream-10: rgba(243, 238, 217, 0.10);
+  --color-cream-15: rgba(243, 238, 217, 0.15);
+  --color-cream-20: rgba(243, 238, 217, 0.20);
+  --color-cream-30: rgba(243, 238, 217, 0.30);
+  --color-cream-40: rgba(243, 238, 217, 0.40);
+  --color-cream-60: rgba(243, 238, 217, 0.60);
+  --color-cream-80: rgba(243, 238, 217, 0.80);
+
+  /* Shadcn-compatible tokens mapped to Phase brand */
+  --color-background: #0F0E0C;
+  --color-foreground: #F3EED9;
+  --color-card: rgba(243, 238, 217, 0.05);
+  --color-card-foreground: #F3EED9;
+  --color-popover: #1a1914;
+  --color-popover-foreground: #F3EED9;
+  --color-primary: #F3EED9;
+  --color-primary-foreground: #0F0E0C;
+  --color-secondary: rgba(243, 238, 217, 0.08);
+  --color-secondary-foreground: #F3EED9;
+  --color-muted: rgba(243, 238, 217, 0.05);
+  --color-muted-foreground: rgba(243, 238, 217, 0.40);
+  --color-accent: rgba(243, 238, 217, 0.08);
+  --color-accent-foreground: #F3EED9;
+  --color-destructive: #f87171;
+  --color-border: rgba(243, 238, 217, 0.08);
+  --color-input: rgba(243, 238, 217, 0.08);
+  --color-ring: rgba(243, 238, 217, 0.20);
+
+  /* Status colors */
+  --color-green: #34d399;
+  --color-red: #f87171;
+  --color-amber: #fbbf24;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+
+  --font-display: var(--font-audiowide);
+  --font-body: var(--font-outfit);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0F0E0C;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(243, 238, 217, 0.15);
+  border-radius: 3px;
 }
