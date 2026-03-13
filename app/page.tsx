@@ -63,19 +63,31 @@ export default function Home() {
     <div className="min-h-screen bg-dark">
       <Header />
 
-      <main className="mx-auto max-w-7xl px-6 py-6 space-y-16">
-        {isLoading ? (
-          <div className="flex items-center justify-center py-32">
-            <div className="flex flex-col items-center gap-3">
-              <Loader2 className="size-8 text-cream-30 animate-spin" />
-              <p className="text-sm text-cream-40">
-                Loading network data...
-              </p>
-            </div>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-32">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="size-8 text-cream-30 animate-spin" />
+            <p className="text-sm text-cream-40">
+              Loading network data...
+            </p>
           </div>
-        ) : enrichedSnapshot ? (
-          <>
-            {/* Stats ribbon */}
+        </div>
+      ) : enrichedSnapshot ? (
+        <>
+          {/* Hero: Network Map — full width, first thing after header */}
+          <section id="network" className="px-6 pt-4 pb-8 mx-auto max-w-7xl">
+            <SectionHeading
+              title="The DoubleZero Network"
+              subtitle={`A global fiber backbone connecting data centers across ${enrichedSnapshot.locations.length}+ cities`}
+            />
+            <div className="mt-4">
+              <NetworkMap snapshot={enrichedSnapshot} />
+            </div>
+          </section>
+
+          {/* Rest of page */}
+          <main className="mx-auto max-w-7xl px-6 pb-6 space-y-16">
+            {/* Stats ribbon — below the hero map */}
             <StatsRibbon
               snapshot={enrichedSnapshot}
               feeHistory={feeHistory}
@@ -84,15 +96,6 @@ export default function Home() {
               selectedEpoch={selectedEpoch}
               onEpochChange={setSelectedEpoch}
             />
-
-            {/* Section 1: Network Map */}
-            <section id="network" className="space-y-6">
-              <SectionHeading
-                title="The DoubleZero Network"
-                subtitle={`A global fiber backbone connecting data centers across ${enrichedSnapshot.locations.length}+ cities`}
-              />
-              <NetworkMap snapshot={enrichedSnapshot} />
-            </section>
 
             {/* Section 2: Contributors */}
             <section id="contributors" className="space-y-6">
@@ -142,20 +145,20 @@ export default function Home() {
                 snapshot={enrichedSnapshot}
               />
             </section>
-          </>
-        ) : (
-          <div className="flex items-center justify-center py-32">
-            <div className="text-center space-y-2">
-              <p className="text-sm text-cream-40">
-                No snapshot data available for this epoch.
-              </p>
-              <p className="text-xs text-cream-30">
-                Try selecting a more recent epoch from the selector above.
-              </p>
-            </div>
+          </main>
+        </>
+      ) : (
+        <div className="flex items-center justify-center py-32">
+          <div className="text-center space-y-2">
+            <p className="text-sm text-cream-40">
+              No snapshot data available for this epoch.
+            </p>
+            <p className="text-xs text-cream-30">
+              Try selecting a more recent epoch from the selector above.
+            </p>
           </div>
-        )}
-      </main>
+        </div>
+      )}
     </div>
   );
 }
