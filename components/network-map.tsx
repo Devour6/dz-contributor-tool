@@ -211,7 +211,7 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                 scale: PROJECTION_SCALE,
               }}
               width={800}
-              height={400}
+              height={360}
               style={{ width: "100%", height: "auto" }}
             >
               <ZoomableGroup
@@ -326,14 +326,14 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                         }
                         style={{ cursor: "pointer" }}
                       />
-                      {/* Label — always show city names */}
-                      {(isSelected || active) && (
+                      {/* Label — show for major hubs at default zoom, all when zoomed in */}
+                      {(isSelected || (active && (selectedContributor || zoom > 1.5 || city.contributors.length >= 3))) && (
                         <text
                           textAnchor="middle"
                           y={-(baseR + 4 / zoom)}
                           style={{
                             fontFamily: "var(--font-outfit)",
-                            fontSize: 8 / zoom,
+                            fontSize: 7 / zoom,
                             fill: isSelected ? "#F3EED9" : "rgba(243,238,217,0.6)",
                             fontWeight: isSelected ? 600 : 400,
                             pointerEvents: "none",
