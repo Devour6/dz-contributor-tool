@@ -22,7 +22,7 @@ import { Cable, MapPin, Server, ZoomIn, ZoomOut, Maximize2, X } from "lucide-rea
 
 const GEO_URL = "/world-110m.json";
 
-const DEFAULT_CENTER: [number, number] = [10, 20];
+const DEFAULT_CENTER: [number, number] = [10, 33];
 const DEFAULT_ZOOM = 1;
 const PROJECTION_SCALE = 125;
 
