@@ -61,11 +61,24 @@ export function LinkPlanner({ snapshot, feeHistory }: LinkPlannerProps) {
     return { share, ...earnings };
   }, [cityA, cityZ, feeHistory, snapshot, totalDemand]);
 
-  // Demand level label
+  // Compute demand thresholds from actual data distribution
+  const demandThresholds = useMemo(() => {
+    const scores = activeCities
+      .map((d) => d.demandScore)
+      .filter((s) => s < 999 && s > 0)
+      .sort((a, b) => a - b);
+    if (scores.length === 0) return { high: 0.5, moderate: 0.1 };
+    const p75 = scores[Math.floor(scores.length * 0.75)];
+    const p25 = scores[Math.floor(scores.length * 0.25)];
+    return { high: p75, moderate: p25 };
+  }, [activeCities]);
+
+  // Demand level label — uses data-relative thresholds
   const demandLabel = (score: number) => {
     if (score >= 999) return { text: "Unserved", cls: "text-green" };
-    if (score > 0.5) return { text: "High demand", cls: "text-green" };
-    if (score > 0.1) return { text: "Moderate", cls: "text-amber" };
+    if (score > demandThresholds.high) return { text: "High demand", cls: "text-green" };
+    if (score > demandThresholds.moderate) return { text: "Moderate", cls: "text-amber" };
+    if (score === 0) return { text: "No demand", cls: "text-cream-20" };
     return { text: "Well covered", cls: "text-cream-30" };
   };
 
