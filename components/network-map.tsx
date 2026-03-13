@@ -22,18 +22,23 @@ import { Cable, MapPin, Server, ZoomIn, ZoomOut, Maximize2, X } from "lucide-rea
 
 const GEO_URL = "/world-110m.json";
 
+const DEFAULT_CENTER: [number, number] = [10, 25];
+const DEFAULT_ZOOM = 1;
+const PROJECTION_SCALE = 80;
+
 interface NetworkMapProps {
   snapshot: ParsedSnapshot;
 }
 
 interface CityInfo {
-  code: string;
+  key: string;
   name: string;
   country: string;
   lat: number;
   lng: number;
   linkCount: number;
   contributors: string[];
+  locationCodes: string[];
 }
 
 interface TooltipData {
@@ -42,34 +47,44 @@ interface TooltipData {
   city: CityInfo;
 }
 
+// Derive a stable city key from a link endpoint — aggregate by city name
+function cityKey(side: { city?: string; locationCode: string }): string {
+  return side.city || side.locationCode;
+}
+
 export function NetworkMap({ snapshot }: NetworkMapProps) {
   const [selectedContributor, setSelectedContributor] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
-  const [zoom, setZoom] = useState(1);
-  const [center, setCenter] = useState<[number, number]>([10, 25]);
+  const [zoom, setZoom] = useState(DEFAULT_ZOOM);
+  const [center, setCenter] = useState<[number, number]>(DEFAULT_CENTER);
 
-  // Build unique city coordinates with enriched data
+  // Build unique cities — aggregate all data centers in the same city into one marker
   const cities = useMemo(() => {
     const coords: Record<string, CityInfo> = {};
     for (const contributor of snapshot.contributors) {
       for (const link of contributor.links) {
         for (const side of [link.sideA, link.sideZ]) {
           if (side.lat && side.lng) {
-            if (!coords[side.locationCode]) {
-              coords[side.locationCode] = {
-                code: side.locationCode,
+            const key = cityKey(side);
+            if (!coords[key]) {
+              coords[key] = {
+                key,
                 name: side.city || side.locationCode,
                 country: side.country,
                 lat: side.lat,
                 lng: side.lng,
                 linkCount: 0,
                 contributors: [],
+                locationCodes: [],
               };
             }
-            coords[side.locationCode].linkCount++;
-            if (!coords[side.locationCode].contributors.includes(contributor.code)) {
-              coords[side.locationCode].contributors.push(contributor.code);
+            coords[key].linkCount++;
+            if (!coords[key].contributors.includes(contributor.code)) {
+              coords[key].contributors.push(contributor.code);
+            }
+            if (!coords[key].locationCodes.includes(side.locationCode)) {
+              coords[key].locationCodes.push(side.locationCode);
             }
           }
         }
@@ -78,8 +93,9 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
     return coords;
   }, [snapshot]);
 
-  // Build link arcs with richer data
+  // Build link arcs — deduplicate arcs between the same two cities by the same contributor
   const arcs = useMemo(() => {
+    const seen = new Set<string>();
     const lines: {
       key: string;
       from: [number, number];
@@ -90,24 +106,31 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
     }[] = [];
     for (const contributor of snapshot.contributors) {
       for (const link of contributor.links) {
-        const a = cities[link.sideA.locationCode];
-        const z = cities[link.sideZ.locationCode];
-        if (a && z) {
-          lines.push({
-            key: link.pubkey,
-            from: [a.lng, a.lat],
-            to: [z.lng, z.lat],
-            contributor: contributor.code,
-            cityA: link.sideA.locationCode,
-            cityZ: link.sideZ.locationCode,
-          });
+        const keyA = cityKey(link.sideA);
+        const keyZ = cityKey(link.sideZ);
+        const a = cities[keyA];
+        const z = cities[keyZ];
+        if (a && z && keyA !== keyZ) {
+          // Deduplicate: same contributor, same city pair = one visual arc
+          const dedupKey = `${contributor.code}:${[keyA, keyZ].sort().join("-")}`;
+          if (!seen.has(dedupKey)) {
+            seen.add(dedupKey);
+            lines.push({
+              key: link.pubkey,
+              from: [a.lng, a.lat],
+              to: [z.lng, z.lat],
+              contributor: contributor.code,
+              cityA: keyA,
+              cityZ: keyZ,
+            });
+          }
         }
       }
     }
     return lines;
   }, [snapshot, cities]);
 
-  // Filter logic: arc is visible if it matches contributor AND/OR city filter
+  // Filter logic
   const isArcActive = useCallback(
     (arc: (typeof arcs)[0]) => {
       const matchesContributor = !selectedContributor || arc.contributor === selectedContributor;
@@ -118,26 +141,25 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
   );
 
   const isCityActive = useCallback(
-    (code: string) => {
+    (key: string) => {
       if (selectedContributor) {
-        return snapshot.contributors
-          .find((c) => c.code === selectedContributor)
-          ?.links.some(
-            (l) => l.sideA.locationCode === code || l.sideZ.locationCode === code
-          ) ?? false;
-      }
-      if (selectedCity) {
-        if (code === selectedCity) return true;
-        // Also highlight cities connected to the selected city
         return arcs.some(
           (a) =>
-            (a.cityA === selectedCity && a.cityZ === code) ||
-            (a.cityZ === selectedCity && a.cityA === code)
+            a.contributor === selectedContributor &&
+            (a.cityA === key || a.cityZ === key)
+        );
+      }
+      if (selectedCity) {
+        if (key === selectedCity) return true;
+        return arcs.some(
+          (a) =>
+            (a.cityA === selectedCity && a.cityZ === key) ||
+            (a.cityZ === selectedCity && a.cityA === key)
         );
       }
       return true;
     },
-    [selectedContributor, selectedCity, snapshot, arcs]
+    [selectedContributor, selectedCity, arcs]
   );
 
   // Selected contributor stats
@@ -155,15 +177,15 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
   const handleZoomIn = () => setZoom((z) => Math.min(z * 1.5, 8));
   const handleZoomOut = () => setZoom((z) => Math.max(z / 1.5, 1));
   const handleReset = () => {
-    setZoom(1);
-    setCenter([10, 25]);
+    setZoom(DEFAULT_ZOOM);
+    setCenter(DEFAULT_CENTER);
   };
 
-  const handleCityClick = (code: string, city: CityInfo) => {
-    if (selectedCity === code) {
+  const handleCityClick = (key: string, city: CityInfo) => {
+    if (selectedCity === key) {
       setSelectedCity(null);
     } else {
-      setSelectedCity(code);
+      setSelectedCity(key);
       setCenter([city.lng, city.lat]);
       setZoom((z) => Math.max(z, 3));
     }
@@ -186,8 +208,8 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
             <ComposableMap
               projection="geoMercator"
               projectionConfig={{
-                scale: 100,
-                center: [10, 25],
+                scale: PROJECTION_SCALE,
+                center: DEFAULT_CENTER,
               }}
               style={{ width: "100%", height: "auto" }}
               viewBox="0 0 800 420"
@@ -240,15 +262,14 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
 
                 {/* City markers */}
                 {Object.values(cities).map((city) => {
-                  const active = isCityActive(city.code);
-                  const isSelected = selectedCity === city.code;
-                  // Scale dot by connection count, compensate for zoom
+                  const active = isCityActive(city.key);
+                  const isSelected = selectedCity === city.key;
                   const baseR = Math.min(2 + city.linkCount * 0.15, 5) / zoom;
                   const glowR = (active ? Math.min(2 + city.linkCount * 0.15, 5) + 3 : 2) / zoom;
                   const inactiveR = 1.2 / zoom;
                   return (
                     <Marker
-                      key={city.code}
+                      key={city.key}
                       coordinates={[city.lng, city.lat]}
                       onMouseEnter={(e: React.MouseEvent) => {
                         const rect = (e.target as SVGElement).closest("svg")?.getBoundingClientRect();
@@ -261,7 +282,7 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                         }
                       }}
                       onMouseLeave={() => setTooltip(null)}
-                      onClick={() => handleCityClick(city.code, city)}
+                      onClick={() => handleCityClick(city.key, city)}
                     >
                       {/* Pulse ring for selected city */}
                       {isSelected && (
@@ -459,15 +480,15 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                     <div className="mt-2 pt-2 border-t border-cream-8 space-y-1">
                       <p className="text-cream-40 mb-1">Connected to:</p>
                       {selectedCityLinks.slice(0, 6).map((link) => {
-                        const otherCode = link.cityA === selectedCity ? link.cityZ : link.cityA;
-                        const otherCity = cities[otherCode];
+                        const otherKey = link.cityA === selectedCity ? link.cityZ : link.cityA;
+                        const otherCity = cities[otherKey];
                         return (
                           <div key={link.key} className="flex items-center gap-1.5">
                             <span
                               className="size-1.5 rounded-full"
                               style={{ backgroundColor: getContributorColor(link.contributor) }}
                             />
-                            <span className="text-cream-60">{otherCity?.name || otherCode}</span>
+                            <span className="text-cream-60">{otherCity?.name || otherKey}</span>
                           </div>
                         );
                       })}
