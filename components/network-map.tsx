@@ -211,7 +211,7 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                         geography={geo}
                         fill="#161513"
                         stroke="#2a2825"
-                        strokeWidth={0.4}
+                        strokeWidth={0.4 / zoom}
                         style={{
                           default: { outline: "none" },
                           hover: { outline: "none", fill: "#1c1b18" },
@@ -231,7 +231,7 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                       from={arc.from}
                       to={arc.to}
                       stroke={getContributorColor(arc.contributor)}
-                      strokeWidth={active ? 1.5 : 0.3}
+                      strokeWidth={(active ? 1.5 : 0.3) / zoom}
                       strokeOpacity={active ? 0.7 : 0.03}
                       strokeLinecap="round"
                     />
@@ -242,8 +242,10 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                 {Object.values(cities).map((city) => {
                   const active = isCityActive(city.code);
                   const isSelected = selectedCity === city.code;
-                  // Scale dot by connection count
-                  const baseR = Math.min(2 + city.linkCount * 0.15, 5);
+                  // Scale dot by connection count, compensate for zoom
+                  const baseR = Math.min(2 + city.linkCount * 0.15, 5) / zoom;
+                  const glowR = (active ? Math.min(2 + city.linkCount * 0.15, 5) + 3 : 2) / zoom;
+                  const inactiveR = 1.2 / zoom;
                   return (
                     <Marker
                       key={city.code}
@@ -263,39 +265,37 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                     >
                       {/* Pulse ring for selected city */}
                       {isSelected && (
-                        <>
-                          <circle
-                            r={10}
-                            fill="none"
-                            stroke="#F3EED9"
-                            strokeWidth={0.5}
-                            strokeOpacity={0.3}
-                          >
-                            <animate
-                              attributeName="r"
-                              from="4"
-                              to="14"
-                              dur="2s"
-                              repeatCount="indefinite"
-                            />
-                            <animate
-                              attributeName="stroke-opacity"
-                              from="0.4"
-                              to="0"
-                              dur="2s"
-                              repeatCount="indefinite"
-                            />
-                          </circle>
-                        </>
+                        <circle
+                          r={10 / zoom}
+                          fill="none"
+                          stroke="#F3EED9"
+                          strokeWidth={0.5 / zoom}
+                          strokeOpacity={0.3}
+                        >
+                          <animate
+                            attributeName="r"
+                            from={`${4 / zoom}`}
+                            to={`${14 / zoom}`}
+                            dur="2s"
+                            repeatCount="indefinite"
+                          />
+                          <animate
+                            attributeName="stroke-opacity"
+                            from="0.4"
+                            to="0"
+                            dur="2s"
+                            repeatCount="indefinite"
+                          />
+                        </circle>
                       )}
                       {/* Glow */}
                       <circle
-                        r={active ? baseR + 3 : 2}
+                        r={glowR}
                         fill="rgba(243,238,217,0.06)"
                       />
                       {/* Dot */}
                       <circle
-                        r={active ? baseR : 1.2}
+                        r={active ? baseR : inactiveR}
                         fill={
                           isSelected
                             ? "#F3EED9"
@@ -309,10 +309,10 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                       {(isSelected || (active && (selectedContributor || zoom > 2))) && (
                         <text
                           textAnchor="middle"
-                          y={-baseR - 5}
+                          y={-(baseR + 4 / zoom)}
                           style={{
                             fontFamily: "var(--font-outfit)",
-                            fontSize: Math.max(7, 9 - zoom * 0.5),
+                            fontSize: 8 / zoom,
                             fill: isSelected ? "#F3EED9" : "rgba(243,238,217,0.6)",
                             fontWeight: isSelected ? 600 : 400,
                             pointerEvents: "none",
