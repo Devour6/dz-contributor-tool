@@ -22,9 +22,9 @@ import { Cable, MapPin, Server, ZoomIn, ZoomOut, Maximize2, X } from "lucide-rea
 
 const GEO_URL = "/world-110m.json";
 
-const DEFAULT_CENTER: [number, number] = [10, 33];
+const DEFAULT_CENTER: [number, number] = [0, 30];
 const DEFAULT_ZOOM = 1;
-const PROJECTION_SCALE = 125;
+const PROJECTION_SCALE = 130;
 
 interface NetworkMapProps {
   snapshot: ParsedSnapshot;
@@ -210,8 +210,9 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
               projectionConfig={{
                 scale: PROJECTION_SCALE,
               }}
+              width={800}
+              height={400}
               style={{ width: "100%", height: "auto" }}
-              viewBox="0 0 800 340"
             >
               <ZoomableGroup
                 center={center}
