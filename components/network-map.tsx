@@ -22,9 +22,9 @@ import { Cable, MapPin, Server, ZoomIn, ZoomOut, Maximize2, X } from "lucide-rea
 
 const GEO_URL = "/world-110m.json";
 
-const DEFAULT_CENTER: [number, number] = [20, 20];
+const DEFAULT_CENTER: [number, number] = [20, 25];
 const DEFAULT_ZOOM = 1;
-const PROJECTION_SCALE = 100;
+const PROJECTION_SCALE = 150;
 
 interface NetworkMapProps {
   snapshot: ParsedSnapshot;
@@ -326,8 +326,8 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                         }
                         style={{ cursor: "pointer" }}
                       />
-                      {/* Label — show when zoomed, selected, or filtering */}
-                      {(isSelected || (active && (selectedContributor || zoom > 1.2 || city.contributors.length >= 3))) && (
+                      {/* Label — always show city names */}
+                      {(isSelected || active) && (
                         <text
                           textAnchor="middle"
                           y={-(baseR + 4 / zoom)}

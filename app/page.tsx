@@ -78,7 +78,6 @@ export default function Home() {
           <section id="network" className="px-6 pt-4 pb-8 mx-auto max-w-7xl">
             <SectionHeading
               title="The DoubleZero Network"
-              subtitle={`A global fiber backbone connecting data centers across ${enrichedSnapshot.locations.length}+ cities`}
             />
             <div className="mt-4">
               <NetworkMap snapshot={enrichedSnapshot} />
