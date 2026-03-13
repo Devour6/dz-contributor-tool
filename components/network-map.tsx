@@ -22,9 +22,9 @@ import { Cable, MapPin, Server, ZoomIn, ZoomOut, Maximize2, X } from "lucide-rea
 
 const GEO_URL = "/world-110m.json";
 
-const DEFAULT_CENTER: [number, number] = [20, 25];
+const DEFAULT_CENTER: [number, number] = [0, 0];
 const DEFAULT_ZOOM = 1;
-const PROJECTION_SCALE = 150;
+const PROJECTION_SCALE = 125;
 
 interface NetworkMapProps {
   snapshot: ParsedSnapshot;
