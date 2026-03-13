@@ -5,7 +5,11 @@ import type { RawSnapshot } from "@/lib/types/snapshot";
 import type { ParsedSnapshot } from "@/lib/types/contributor";
 import { parseSnapshot } from "@/lib/utils/snapshot-parser";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+};
 
 export function useRawSnapshot(epoch: number | null) {
   return useSWR<RawSnapshot>(

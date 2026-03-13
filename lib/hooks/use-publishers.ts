@@ -3,7 +3,11 @@
 import useSWR from "swr";
 import type { PublisherCheckResponse } from "@/lib/types/publisher";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Publisher API error: ${res.status}`);
+  return res.json();
+};
 
 export function usePublishers() {
   return useSWR<PublisherCheckResponse>("/api/publishers", fetcher, {
