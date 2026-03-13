@@ -7,9 +7,10 @@ import { ContributorCard } from "./contributor-card";
 interface ContributorGridProps {
   contributors: Contributor[];
   feeHistory: FeeHistory | undefined;
+  shapleyLoaded?: boolean;
 }
 
-export function ContributorGrid({ contributors, feeHistory }: ContributorGridProps) {
+export function ContributorGrid({ contributors, feeHistory, shapleyLoaded }: ContributorGridProps) {
   const sorted = [...contributors]
     .filter((c) => c.linkCount > 0)
     .sort((a, b) => b.linkCount - a.linkCount);
@@ -22,7 +23,9 @@ export function ContributorGrid({ contributors, feeHistory }: ContributorGridPro
         ))}
       </div>
       <p className="text-xs text-cream-30 text-center">
-        Reward shares are estimated using demand-weighted coverage. Actual Shapley allocations may differ.
+        {shapleyLoaded
+          ? "Reward shares computed using Shapley value analysis of operator contributions."
+          : "Reward shares are estimated using demand-weighted coverage. Computing Shapley values..."}
       </p>
     </div>
   );

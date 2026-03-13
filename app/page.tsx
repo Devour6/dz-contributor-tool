@@ -13,6 +13,7 @@ import { useSnapshot } from "@/lib/hooks/use-snapshot";
 import { useFees } from "@/lib/hooks/use-fees";
 import { useEpochs } from "@/lib/hooks/use-epochs";
 import { usePublishers } from "@/lib/hooks/use-publishers";
+import { useShapleyValues } from "@/lib/hooks/use-shapley";
 import { computeValidatorRewards } from "@/lib/utils/reward-estimator";
 import { Loader2 } from "lucide-react";
 
@@ -31,10 +32,30 @@ export default function Home() {
   const { data: feeHistory, isLoading: feesLoading } = useFees();
   const { data: publisherData, isLoading: publishersLoading } = usePublishers();
 
+  const { data: shapleyData, isLoading: shapleyLoading } =
+    useShapleyValues(selectedEpoch);
+
   const validatorRewards = useMemo(() => {
     if (!publisherData || !feeHistory) return null;
     return computeValidatorRewards(publisherData, feeHistory.averageFeeSol);
   }, [publisherData, feeHistory]);
+
+  // Merge Shapley values into snapshot when available
+  const enrichedSnapshot = useMemo(() => {
+    if (!snapshot) return undefined;
+    if (!shapleyData?.values) return snapshot;
+
+    return {
+      ...snapshot,
+      contributors: snapshot.contributors.map((c) => {
+        const shapley = shapleyData.values[c.code];
+        return {
+          ...c,
+          estimatedShare: shapley?.share ?? c.estimatedShare,
+        };
+      }),
+    };
+  }, [snapshot, shapleyData]);
 
   const isLoading = epochsLoading || snapshotLoading;
 
@@ -52,11 +73,11 @@ export default function Home() {
               </p>
             </div>
           </div>
-        ) : snapshot ? (
+        ) : enrichedSnapshot ? (
           <>
             {/* Stats ribbon */}
             <StatsRibbon
-              snapshot={snapshot}
+              snapshot={enrichedSnapshot}
               feeHistory={feeHistory}
               feesLoading={feesLoading}
               epochs={epochsData?.available || []}
@@ -68,20 +89,21 @@ export default function Home() {
             <section id="network" className="space-y-6">
               <SectionHeading
                 title="The DoubleZero Network"
-                subtitle={`A global fiber backbone connecting data centers across ${snapshot.locations.length}+ cities`}
+                subtitle={`A global fiber backbone connecting data centers across ${enrichedSnapshot.locations.length}+ cities`}
               />
-              <NetworkMap snapshot={snapshot} />
+              <NetworkMap snapshot={enrichedSnapshot} />
             </section>
 
             {/* Section 2: Contributors */}
             <section id="contributors" className="space-y-6">
               <SectionHeading
                 title="Contributors"
-                subtitle={`${snapshot.contributors.filter((c) => c.linkCount > 0).length} organizations building the network`}
+                subtitle={`${enrichedSnapshot.contributors.filter((c) => c.linkCount > 0).length} organizations building the network`}
               />
               <ContributorGrid
-                contributors={snapshot.contributors}
+                contributors={enrichedSnapshot.contributors}
                 feeHistory={feeHistory}
+                shapleyLoaded={!!shapleyData?.values}
               />
             </section>
 
@@ -92,7 +114,7 @@ export default function Home() {
                 subtitle="See where the network needs coverage and estimate your potential rewards"
               />
               <LinkPlanner
-                snapshot={snapshot}
+                snapshot={enrichedSnapshot}
                 feeHistory={feeHistory}
               />
             </section>
@@ -117,7 +139,7 @@ export default function Home() {
               />
               <NetworkEconomics
                 feeHistory={feeHistory}
-                snapshot={snapshot}
+                snapshot={enrichedSnapshot}
               />
             </section>
           </>

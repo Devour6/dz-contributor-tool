@@ -16,7 +16,7 @@ export interface RawSnapshot {
       device_latency_samples: unknown;
     };
     dz_internet: {
-      internet_latency_samples: unknown;
+      internet_latency_samples: RawInternetLatencySample[];
     };
   };
   leader_schedule: {
@@ -90,6 +90,18 @@ export interface RawExchange {
   reference_count: number;
   device1_pk: string;
   device2_pk: string;
+}
+
+export interface RawInternetLatencySample {
+  pubkey: string;
+  epoch: number;
+  data_provider_name: string;
+  oracle_agent_pk: string;
+  origin_exchange_pk: string;
+  target_exchange_pk: string;
+  sampling_interval_us: number;
+  start_timestamp_us: number;
+  samples: number[]; // latency values in microseconds
 }
 
 export interface RawUser {

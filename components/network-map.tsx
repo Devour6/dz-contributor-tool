@@ -46,8 +46,8 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
   const [selectedContributor, setSelectedContributor] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
-  const [zoom, setZoom] = useState(1);
-  const [center, setCenter] = useState<[number, number]>([15, 20]);
+  const [zoom, setZoom] = useState(1.8);
+  const [center, setCenter] = useState<[number, number]>([10, 35]);
 
   // Build unique city coordinates with enriched data
   const cities = useMemo(() => {
@@ -155,8 +155,8 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
   const handleZoomIn = () => setZoom((z) => Math.min(z * 1.5, 8));
   const handleZoomOut = () => setZoom((z) => Math.max(z / 1.5, 1));
   const handleReset = () => {
-    setZoom(1);
-    setCenter([15, 20]);
+    setZoom(1.8);
+    setCenter([10, 35]);
   };
 
   const handleCityClick = (code: string, city: CityInfo) => {
@@ -187,7 +187,7 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
               projection="geoMercator"
               projectionConfig={{
                 scale: 130,
-                center: [15, 20],
+                center: [10, 35],
               }}
               style={{ width: "100%", height: "auto" }}
               viewBox="0 0 800 420"
@@ -231,8 +231,8 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                       from={arc.from}
                       to={arc.to}
                       stroke={getContributorColor(arc.contributor)}
-                      strokeWidth={(active ? 1.5 : 0.3) / zoom}
-                      strokeOpacity={active ? 0.7 : 0.03}
+                      strokeWidth={(active ? 1.5 : 0.8) / zoom}
+                      strokeOpacity={active ? 0.7 : 0.15}
                       strokeLinecap="round"
                     />
                   );
@@ -306,7 +306,7 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                         style={{ cursor: "pointer" }}
                       />
                       {/* Label — show when zoomed, selected, or filtering */}
-                      {(isSelected || (active && (selectedContributor || zoom > 2))) && (
+                      {(isSelected || (active && (selectedContributor || zoom > 2 || city.contributors.length >= 3))) && (
                         <text
                           textAnchor="middle"
                           y={-(baseR + 4 / zoom)}
@@ -393,7 +393,7 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
             {hasActiveFilter && (
               <button
                 onClick={clearFilters}
-                className="absolute top-3 left-3 flex items-center gap-1.5 rounded-full bg-dark/80 border border-cream-8 px-3 py-1.5 text-xs text-cream-60 hover:text-cream hover:border-cream-15 transition-colors"
+                className="absolute top-3 left-3 z-50 flex items-center gap-1.5 rounded-full bg-dark/80 border border-cream-8 px-3 py-1.5 text-xs text-cream-60 hover:text-cream hover:border-cream-15 transition-colors"
               >
                 <X className="size-3" />
                 Clear filter
@@ -404,8 +404,8 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
 
         {/* Detail panel — shows when contributor or city is selected */}
         {(selectedContributorData || selectedCity) && (
-          <div className="absolute top-3 left-3 z-40 max-w-[260px]" style={{ top: hasActiveFilter ? 44 : 12 }}>
-            <div className="rounded-xl bg-dark/95 border border-cream-10 p-4 shadow-xl backdrop-blur-sm">
+          <div className="absolute left-3 z-40 max-w-[260px]" style={{ top: hasActiveFilter ? 48 : 12 }}>
+            <div className="rounded-xl bg-dark/95 border border-cream-10 p-4 shadow-xl backdrop-blur-sm max-h-[320px] overflow-y-auto">
               {selectedContributorData && (
                 <>
                   <div className="flex items-center gap-2 mb-3">
@@ -493,11 +493,20 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
               key={c.code}
               onClick={() => {
                 setSelectedCity(null);
-                setSelectedContributor(
-                  selectedContributor === c.code ? null : c.code
-                );
                 if (selectedContributor === c.code) {
+                  setSelectedContributor(null);
                   handleReset();
+                } else {
+                  setSelectedContributor(c.code);
+                  const contributorCities = Object.values(cities).filter(
+                    (city) => city.contributors.includes(c.code)
+                  );
+                  if (contributorCities.length > 0) {
+                    const avgLng = contributorCities.reduce((s, ct) => s + ct.lng, 0) / contributorCities.length;
+                    const avgLat = contributorCities.reduce((s, ct) => s + ct.lat, 0) / contributorCities.length;
+                    setCenter([avgLng, avgLat]);
+                    setZoom((z) => Math.max(z, 2.5));
+                  }
                 }
               }}
               className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs transition-all border ${
