@@ -209,7 +209,6 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
               projection="geoMercator"
               projectionConfig={{
                 scale: PROJECTION_SCALE,
-                center: DEFAULT_CENTER,
               }}
               style={{ width: "100%", height: "auto" }}
               viewBox="0 0 800 340"
