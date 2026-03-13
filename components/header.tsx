@@ -31,6 +31,12 @@ export function Header() {
             Plan a Link
           </a>
           <a
+            href="#validators"
+            className="text-sm text-cream-40 hover:text-cream transition-colors hidden sm:block"
+          >
+            Validators
+          </a>
+          <a
             href="#economics"
             className="text-sm text-cream-40 hover:text-cream transition-colors hidden sm:block"
           >

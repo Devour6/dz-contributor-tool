@@ -6,7 +6,7 @@ import type { ParsedSnapshot } from "@/lib/types/contributor";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatSolFromSol } from "@/lib/utils/format";
 import { computeFeeTrend } from "@/lib/utils/reward-estimator";
-import { CONTRIBUTOR_SHARE } from "@/lib/constants/config";
+// CONTRIBUTOR_SHARE no longer needed — fee split card now shows the 45/45/10 breakdown directly
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 interface NetworkEconomicsProps {
@@ -37,9 +37,9 @@ export function NetworkEconomics({ feeHistory, snapshot }: NetworkEconomicsProps
           note="~2.5 days per epoch"
         />
         <MetricCard
-          label="Contributor share"
-          value={`${CONTRIBUTOR_SHARE * 100}%`}
-          note="10% burned, 90% distributed"
+          label="Fee split"
+          value="45 / 45 / 10"
+          note="Contributors / Validators / Burn"
         />
         <MetricCard
           label="Fee trend"

@@ -1,16 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Header } from "@/components/header";
 import { StatsRibbon } from "@/components/stats-ribbon";
 import { SectionHeading } from "@/components/section-heading";
 import { NetworkMap } from "@/components/network-map";
 import { ContributorGrid } from "@/components/contributors/contributor-grid";
 import { LinkPlanner } from "@/components/planner/link-planner";
+import { ValidatorRewards } from "@/components/validators/validator-rewards";
 import { NetworkEconomics } from "@/components/economics/network-economics";
 import { useSnapshot } from "@/lib/hooks/use-snapshot";
 import { useFees } from "@/lib/hooks/use-fees";
 import { useEpochs } from "@/lib/hooks/use-epochs";
+import { usePublishers } from "@/lib/hooks/use-publishers";
+import { computeValidatorRewards } from "@/lib/utils/reward-estimator";
 import { Loader2 } from "lucide-react";
 
 export default function Home() {
@@ -26,6 +29,12 @@ export default function Home() {
   const { data: snapshot, isLoading: snapshotLoading } =
     useSnapshot(selectedEpoch);
   const { data: feeHistory, isLoading: feesLoading } = useFees();
+  const { data: publisherData, isLoading: publishersLoading } = usePublishers();
+
+  const validatorRewards = useMemo(() => {
+    if (!publisherData || !feeHistory) return null;
+    return computeValidatorRewards(publisherData, feeHistory.averageFeeSol);
+  }, [publisherData, feeHistory]);
 
   const isLoading = epochsLoading || snapshotLoading;
 
@@ -88,7 +97,19 @@ export default function Home() {
               />
             </section>
 
-            {/* Section 4: Network Economics */}
+            {/* Section 4: Validator Rewards */}
+            <section id="validators" className="space-y-6">
+              <SectionHeading
+                title="Validator Rewards"
+                subtitle="Current epoch publishers and projected reward distribution under the 45/45/10 split"
+              />
+              <ValidatorRewards
+                rewards={validatorRewards}
+                isLoading={publishersLoading || feesLoading}
+              />
+            </section>
+
+            {/* Section 5: Network Economics */}
             <section id="economics" className="space-y-6">
               <SectionHeading
                 title="Network Economics"

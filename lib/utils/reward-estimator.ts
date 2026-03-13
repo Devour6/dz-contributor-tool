@@ -1,5 +1,10 @@
-import { CONTRIBUTOR_SHARE } from "@/lib/constants/config";
+import { CONTRIBUTOR_SHARE, VALIDATOR_SHARE, LAMPORTS_PER_SOL } from "@/lib/constants/config";
 import type { FeeHistory } from "@/lib/types/fees";
+import type {
+  PublisherCheckResponse,
+  ValidatorRewardProjection,
+  ValidatorRewardsSummary,
+} from "@/lib/types/publisher";
 
 /**
  * Estimate rewards for a contributor based on their share and fee history.
@@ -68,4 +73,68 @@ export function computeFeeTrend(feeHistory: FeeHistory): {
     slope > 0.5 ? "growing" : slope < -0.5 ? "declining" : "stable";
 
   return { slope, direction };
+}
+
+/**
+ * Compute projected validator rewards from publisher data and historical fee average.
+ * Publishing validators share the 45% validator pool proportional to their activated_stake.
+ */
+export function computeValidatorRewards(
+  publisherData: PublisherCheckResponse,
+  averageFeePerEpochSol: number
+): ValidatorRewardsSummary {
+  const validatorPoolPerEpoch = averageFeePerEpochSol * VALIDATOR_SHARE;
+  const epochsPerMonth = 12;
+  const epochsPerYear = 144;
+
+  const publishingValidators = publisherData.publishers.filter(
+    (p) => p.publishing_leader_shreds === true
+  );
+
+  const totalPublishingStake = publishingValidators.reduce(
+    (sum, p) => sum + p.activated_stake,
+    0
+  );
+
+  const validators: ValidatorRewardProjection[] = publisherData.publishers.map(
+    (p) => {
+      const isPublishing = p.publishing_leader_shreds;
+      const stakeShare =
+        isPublishing && totalPublishingStake > 0
+          ? p.activated_stake / totalPublishingStake
+          : 0;
+      const perEpoch = stakeShare * validatorPoolPerEpoch;
+
+      return {
+        nodePubkey: p.node_pubkey,
+        votePubkey: p.vote_pubkey,
+        validatorName: p.validator_name || "",
+        activatedStake: p.activated_stake,
+        stakeSharePercent: stakeShare * 100,
+        publishingLeaderShreds: p.publishing_leader_shreds,
+        leaderSlots: p.leader_slots,
+        totalSlots: p.total_slots,
+        dzMetroCode: p.dz_metro_code,
+        dzDeviceCode: p.dz_device_code,
+        validatorClient: p.validator_client,
+        validatorVersion: p.validator_version,
+        isBackup: p.is_backup,
+        multicastConnected: p.multicast_connected,
+        projectedRewardPerEpochSol: perEpoch,
+        projectedRewardMonthlySol: perEpoch * epochsPerMonth,
+        projectedRewardYearlySol: perEpoch * epochsPerYear,
+      };
+    }
+  );
+
+  validators.sort((a, b) => b.stakeSharePercent - a.stakeSharePercent);
+
+  return {
+    epoch: publisherData.epoch,
+    totalNetworkStake: publisherData.total_network_stake,
+    publishingValidatorCount: publishingValidators.length,
+    totalPublishingStake,
+    projectedValidatorPoolPerEpochSol: validatorPoolPerEpoch,
+    validators,
+  };
 }

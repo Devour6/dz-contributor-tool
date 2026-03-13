@@ -15,9 +15,10 @@ export const MAX_DZ_EPOCH = 120; // Will be dynamically discovered
 export const FEE_EPOCH_START = 859;
 export const FEE_EPOCH_END = 938; // Paused at 939
 
-// Economics
+// Economics — 45/45/10 split
 export const BURN_RATE = 0.10; // 10% of revenue burned
-export const CONTRIBUTOR_SHARE = 0.90; // 90% distributed to contributors
+export const CONTRIBUTOR_SHARE = 0.45; // 45% distributed to contributors (Shapley)
+export const VALIDATOR_SHARE = 0.45; // 45% distributed to validators (stake-weighted)
 export const LAMPORTS_PER_SOL = 1_000_000_000;
 
 // Shapley parameters (for reference — full computation done off-chain)
