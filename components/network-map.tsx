@@ -212,7 +212,7 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                 center: DEFAULT_CENTER,
               }}
               style={{ width: "100%", height: "auto" }}
-              viewBox="0 0 800 450"
+              viewBox="0 0 800 340"
             >
               <ZoomableGroup
                 center={center}

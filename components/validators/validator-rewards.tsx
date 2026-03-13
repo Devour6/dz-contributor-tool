@@ -150,7 +150,7 @@ export function ValidatorRewards({ rewards, isLoading }: ValidatorRewardsProps) 
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="border-cream-8 hover:bg-transparent">
@@ -212,7 +212,7 @@ export function ValidatorRewards({ rewards, isLoading }: ValidatorRewardsProps) 
       </div>
 
       {/* Mobile: Card list */}
-      <div className="md:hidden space-y-3">
+      <div className="md:hidden space-y-3 max-h-[600px] overflow-y-auto">
         <p className="font-display text-sm tracking-wide text-cream">
           Epoch {rewards.epoch} Publishers
         </p>
