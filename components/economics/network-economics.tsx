@@ -6,7 +6,7 @@ import type { ParsedSnapshot } from "@/lib/types/contributor";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatSolFromSol } from "@/lib/utils/format";
 import { computeFeeTrend } from "@/lib/utils/reward-estimator";
-// CONTRIBUTOR_SHARE no longer needed — fee split card now shows the 45/45/10 breakdown directly
+import { FEE_EPOCH_START, FEE_EPOCH_END } from "@/lib/constants/config";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 interface NetworkEconomicsProps {
@@ -20,7 +20,15 @@ export function NetworkEconomics({ feeHistory, snapshot }: NetworkEconomicsProps
     [feeHistory]
   );
 
-  if (!feeHistory || feeHistory.epochs.length === 0) return null;
+  if (!feeHistory || feeHistory.epochs.length === 0) {
+    return (
+      <Card className="bg-cream-5 border-cream-8">
+        <CardContent className="py-8 text-center text-sm text-cream-40">
+          Fee history data is currently unavailable. Check back later.
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -97,7 +105,7 @@ export function NetworkEconomics({ feeHistory, snapshot }: NetworkEconomicsProps
             </span>
           </div>
           <p className="text-xs text-cream-20 mt-3">
-            Fees were collected from Solana epochs 859–938. The program is
+            Fees were collected from Solana epochs {FEE_EPOCH_START}–{FEE_EPOCH_END}. The program is
             currently paused as the network transitions to a shred-based
             economy.
           </p>

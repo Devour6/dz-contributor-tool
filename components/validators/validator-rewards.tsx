@@ -18,12 +18,34 @@ import {
   formatNumber,
   shortenPubkey,
 } from "@/lib/utils/format";
-import { LAMPORTS_PER_SOL } from "@/lib/constants/config";
-import { Search, AlertTriangle, Users, Coins, ShieldCheck, Activity } from "lucide-react";
+import { LAMPORTS_PER_SOL, FEE_EPOCH_START, FEE_EPOCH_END } from "@/lib/constants/config";
+import { Search, AlertTriangle, Users, Coins, ShieldCheck, Activity, Loader2 } from "lucide-react";
 
 interface ValidatorRewardsProps {
   rewards: ValidatorRewardsSummary | null;
   isLoading: boolean;
+}
+
+function StatusBadge({ publishing, backup }: { publishing: boolean; backup: boolean }) {
+  if (publishing) {
+    return (
+      <Badge className="bg-green/10 text-green border-green/20 text-xs">
+        Publishing
+      </Badge>
+    );
+  }
+  if (backup) {
+    return (
+      <Badge className="bg-blue-400/10 text-blue-400 border-blue-400/20 text-xs">
+        Backup
+      </Badge>
+    );
+  }
+  return (
+    <Badge className="bg-cream-5 text-cream-40 border-cream-8 text-xs">
+      Not Publishing
+    </Badge>
+  );
 }
 
 export function ValidatorRewards({ rewards, isLoading }: ValidatorRewardsProps) {
@@ -45,7 +67,10 @@ export function ValidatorRewards({ rewards, isLoading }: ValidatorRewardsProps) 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <p className="text-sm text-cream-40">Loading publisher data...</p>
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="size-6 text-cream-30 animate-spin" />
+          <p className="text-sm text-cream-40">Loading publisher data...</p>
+        </div>
       </div>
     );
   }
@@ -70,7 +95,7 @@ export function ValidatorRewards({ rewards, isLoading }: ValidatorRewardsProps) 
       <div className="flex items-start gap-2 rounded-lg bg-amber-500/5 border border-amber-500/20 px-3 py-2 text-xs text-amber-400">
         <AlertTriangle className="size-3.5 shrink-0 mt-0.5" />
         <span>
-          Projected rewards use historical fee averages (epochs 859-938) and the
+          Projected rewards use historical fee averages (epochs {FEE_EPOCH_START}–{FEE_EPOCH_END}) and the
           new 45/45/10 split. No validator rewards have been paid yet — actual
           amounts will depend on future fee volume.
         </span>
@@ -116,111 +141,135 @@ export function ValidatorRewards({ rewards, isLoading }: ValidatorRewardsProps) 
         />
       </div>
 
-      {/* Validator table */}
-      <Card className="bg-cream-5 border-cream-8 overflow-hidden">
-        <CardHeader>
-          <CardTitle className="font-display text-sm tracking-wide text-cream">
-            Epoch {rewards.epoch} Publishers
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-cream-8 hover:bg-transparent">
-                  <TableHead className="text-cream-40">Validator</TableHead>
-                  <TableHead className="text-cream-40">Metro</TableHead>
-                  <TableHead className="text-cream-40 text-right">
-                    Stake (SOL)
-                  </TableHead>
-                  <TableHead className="text-cream-40 text-right">
-                    Share
-                  </TableHead>
-                  <TableHead className="text-cream-40 text-right">
-                    Leader Slots
-                  </TableHead>
-                  <TableHead className="text-cream-40">Client</TableHead>
-                  <TableHead className="text-cream-40">Status</TableHead>
-                  <TableHead className="text-cream-40 text-right">
-                    Est. / Epoch
-                  </TableHead>
-                  <TableHead className="text-cream-40 text-right">
-                    Est. / Month
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((v) => (
-                  <TableRow
-                    key={v.nodePubkey}
-                    className={`border-cream-8 ${
-                      !v.publishingLeaderShreds ? "opacity-40" : ""
-                    }`}
-                  >
-                    <TableCell className="text-cream">
-                      <div>
-                        <span className="font-medium">
-                          {v.validatorName || "Unknown"}
-                        </span>
-                        <span className="block text-xs text-cream-30">
-                          {shortenPubkey(v.nodePubkey)}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-cream-60 uppercase text-xs">
-                      {v.dzMetroCode}
-                    </TableCell>
-                    <TableCell className="text-right text-cream-60 tabular-nums">
-                      {formatNumber(v.activatedStake / LAMPORTS_PER_SOL, 0)}
-                    </TableCell>
-                    <TableCell className="text-right text-cream-60 tabular-nums">
-                      {v.publishingLeaderShreds
-                        ? formatPercent(v.stakeSharePercent / 100)
-                        : "-"}
-                    </TableCell>
-                    <TableCell className="text-right text-cream-60 tabular-nums">
-                      {formatNumber(v.leaderSlots)}
-                    </TableCell>
-                    <TableCell className="text-cream-60 text-xs">
-                      {v.validatorClient}
-                    </TableCell>
-                    <TableCell>
-                      {v.publishingLeaderShreds ? (
-                        <Badge className="bg-green/10 text-green border-green/20 text-xs">
-                          Publishing
-                        </Badge>
-                      ) : v.isBackup ? (
-                        <Badge className="bg-blue-400/10 text-blue-400 border-blue-400/20 text-xs">
-                          Backup
-                        </Badge>
-                      ) : (
-                        <Badge className="bg-cream-10 text-cream-30 border-cream-8 text-xs">
-                          Not Publishing
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right text-cream-60 tabular-nums">
-                      {v.publishingLeaderShreds
-                        ? `${formatSolFromSol(v.projectedRewardPerEpochSol, 4)} SOL`
-                        : "-"}
-                    </TableCell>
-                    <TableCell className="text-right text-cream-60 tabular-nums">
-                      {v.publishingLeaderShreds
-                        ? `${formatSolFromSol(v.projectedRewardMonthlySol)} SOL`
-                        : "-"}
-                    </TableCell>
+      {/* Desktop: Table */}
+      <div className="hidden md:block">
+        <Card className="bg-cream-5 border-cream-8 overflow-hidden">
+          <CardHeader>
+            <CardTitle className="font-display text-sm tracking-wide text-cream">
+              Epoch {rewards.epoch} Publishers
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-cream-8 hover:bg-transparent">
+                    <TableHead className="text-cream-40">Validator</TableHead>
+                    <TableHead className="text-cream-40">Metro</TableHead>
+                    <TableHead className="text-cream-40 text-right">Stake (SOL)</TableHead>
+                    <TableHead className="text-cream-40 text-right">Share</TableHead>
+                    <TableHead className="text-cream-40 text-right">Leader Slots</TableHead>
+                    <TableHead className="text-cream-40">Client</TableHead>
+                    <TableHead className="text-cream-40">Status</TableHead>
+                    <TableHead className="text-cream-40 text-right">Est. / Epoch</TableHead>
+                    <TableHead className="text-cream-40 text-right">Est. / Month</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            {filtered.length === 0 && (
-              <p className="text-center text-sm text-cream-30 py-8">
-                No validators match your search.
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map((v) => (
+                    <TableRow
+                      key={v.nodePubkey}
+                      className={`border-cream-8 ${!v.publishingLeaderShreds ? "opacity-40" : ""}`}
+                    >
+                      <TableCell className="text-cream">
+                        <div>
+                          <span className="font-medium">{v.validatorName || "Unknown"}</span>
+                          <span className="block text-xs text-cream-30">{shortenPubkey(v.nodePubkey)}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-cream-60 uppercase text-xs">{v.dzMetroCode}</TableCell>
+                      <TableCell className="text-right text-cream-60 tabular-nums">
+                        {formatNumber(v.activatedStake / LAMPORTS_PER_SOL, 0)}
+                      </TableCell>
+                      <TableCell className="text-right text-cream-60 tabular-nums">
+                        {v.publishingLeaderShreds ? formatPercent(v.stakeSharePercent / 100) : "-"}
+                      </TableCell>
+                      <TableCell className="text-right text-cream-60 tabular-nums">
+                        {formatNumber(v.leaderSlots)}
+                      </TableCell>
+                      <TableCell className="text-cream-60 text-xs">{v.validatorClient}</TableCell>
+                      <TableCell>
+                        <StatusBadge publishing={v.publishingLeaderShreds} backup={v.isBackup} />
+                      </TableCell>
+                      <TableCell className="text-right text-cream-60 tabular-nums">
+                        {v.publishingLeaderShreds ? `${formatSolFromSol(v.projectedRewardPerEpochSol, 4)} SOL` : "-"}
+                      </TableCell>
+                      <TableCell className="text-right text-cream-60 tabular-nums">
+                        {v.publishingLeaderShreds ? `${formatSolFromSol(v.projectedRewardMonthlySol)} SOL` : "-"}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {filtered.length === 0 && (
+                <p className="text-center text-sm text-cream-40 py-8">
+                  No validators match your search.
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Mobile: Card list */}
+      <div className="md:hidden space-y-3">
+        <p className="font-display text-sm tracking-wide text-cream">
+          Epoch {rewards.epoch} Publishers
+        </p>
+        {filtered.length === 0 && (
+          <p className="text-center text-sm text-cream-40 py-8">
+            No validators match your search.
+          </p>
+        )}
+        {filtered.map((v) => (
+          <Card
+            key={v.nodePubkey}
+            className={`bg-cream-5 border-cream-8 ${!v.publishingLeaderShreds ? "opacity-40" : ""}`}
+          >
+            <CardContent className="pt-4 pb-4 space-y-3">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-cream">
+                    {v.validatorName || "Unknown"}
+                  </p>
+                  <p className="text-xs text-cream-30">{shortenPubkey(v.nodePubkey)}</p>
+                </div>
+                <StatusBadge publishing={v.publishingLeaderShreds} backup={v.isBackup} />
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-cream-40">Metro </span>
+                  <span className="text-cream-60 uppercase">{v.dzMetroCode}</span>
+                </div>
+                <div>
+                  <span className="text-cream-40">Stake </span>
+                  <span className="text-cream-60 tabular-nums">
+                    {formatNumber(v.activatedStake / LAMPORTS_PER_SOL, 0)} SOL
+                  </span>
+                </div>
+                <div>
+                  <span className="text-cream-40">Share </span>
+                  <span className="text-cream-60 tabular-nums">
+                    {v.publishingLeaderShreds ? formatPercent(v.stakeSharePercent / 100) : "-"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-cream-40">Slots </span>
+                  <span className="text-cream-60 tabular-nums">{formatNumber(v.leaderSlots)}</span>
+                </div>
+              </div>
+              {v.publishingLeaderShreds && (
+                <div className="flex items-center justify-between pt-2 border-t border-cream-8 text-xs">
+                  <span className="text-cream-40">Est. reward / epoch</span>
+                  <span className="text-cream font-medium tabular-nums">
+                    {formatSolFromSol(v.projectedRewardPerEpochSol, 4)} SOL
+                  </span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }

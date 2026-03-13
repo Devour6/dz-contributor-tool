@@ -123,9 +123,14 @@ export default function Home() {
           </>
         ) : (
           <div className="flex items-center justify-center py-32">
-            <p className="text-sm text-cream-40">
-              No data available. Try selecting a different epoch.
-            </p>
+            <div className="text-center space-y-2">
+              <p className="text-sm text-cream-40">
+                No snapshot data available for this epoch.
+              </p>
+              <p className="text-xs text-cream-30">
+                Try selecting a more recent epoch from the selector above.
+              </p>
+            </div>
           </div>
         )}
       </main>

@@ -15,10 +15,15 @@ export function ContributorGrid({ contributors, feeHistory }: ContributorGridPro
     .sort((a, b) => b.linkCount - a.linkCount);
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {sorted.map((c) => (
-        <ContributorCard key={c.code} contributor={c} feeHistory={feeHistory} />
-      ))}
+    <div className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {sorted.map((c) => (
+          <ContributorCard key={c.code} contributor={c} feeHistory={feeHistory} />
+        ))}
+      </div>
+      <p className="text-xs text-cream-30 text-center">
+        Reward shares are estimated using demand-weighted coverage. Actual Shapley allocations may differ.
+      </p>
     </div>
   );
 }

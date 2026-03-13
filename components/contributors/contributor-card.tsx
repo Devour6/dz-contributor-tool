@@ -72,7 +72,7 @@ export function ContributorCard({ contributor, feeHistory }: ContributorCardProp
         {/* Reward share bar */}
         <div className="mt-3">
           <div className="flex items-center justify-between text-xs mb-1">
-            <span className="text-cream-40">Reward share</span>
+            <span className="text-cream-40">Est. reward share</span>
             <span className="text-cream-60">
               {formatPercent(contributor.estimatedShare)}
             </span>
@@ -111,11 +111,17 @@ export function ContributorCard({ contributor, feeHistory }: ContributorCardProp
         </div>
 
         {/* Expand toggle */}
-        <div className="flex items-center justify-center mt-3 text-cream-20">
+        <div className="flex items-center justify-center gap-1.5 mt-3 text-cream-30 text-xs">
           {expanded ? (
-            <ChevronDown className="size-4" />
+            <>
+              <ChevronDown className="size-3.5" />
+              <span>Hide links</span>
+            </>
           ) : (
-            <ChevronRight className="size-4" />
+            <>
+              <ChevronRight className="size-3.5" />
+              <span>View links</span>
+            </>
           )}
         </div>
 

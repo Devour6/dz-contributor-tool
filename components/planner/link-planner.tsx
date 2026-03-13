@@ -17,6 +17,7 @@ import {
 } from "@/lib/utils/demand";
 import { projectEarnings } from "@/lib/utils/reward-estimator";
 import { formatPercent, formatSolFromSol } from "@/lib/utils/format";
+import { FEE_EPOCH_START, FEE_EPOCH_END } from "@/lib/constants/config";
 import { ArrowRight, Zap } from "lucide-react";
 
 interface LinkPlannerProps {
@@ -105,7 +106,7 @@ export function LinkPlanner({ snapshot, feeHistory }: LinkPlannerProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap items-end gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-4">
             <div className="space-y-1.5 flex-1 min-w-[200px]">
               <label className="text-xs text-cream-40">Origin city</label>
               <Select value={cityA} onValueChange={setCityA}>
@@ -128,7 +129,7 @@ export function LinkPlanner({ snapshot, feeHistory }: LinkPlannerProps) {
               </Select>
             </div>
 
-            <ArrowRight className="size-4 text-cream-30 mb-2" />
+            <ArrowRight className="size-4 text-cream-30 mb-2 hidden sm:block" />
 
             <div className="space-y-1.5 flex-1 min-w-[200px]">
               <label className="text-xs text-cream-40">Destination city</label>
@@ -195,7 +196,7 @@ export function LinkPlanner({ snapshot, feeHistory }: LinkPlannerProps) {
             </div>
 
             <p className="text-xs text-cream-20 text-center mt-4">
-              Based on historical fee averages (epochs 859–938). Fees are
+              Based on historical fee averages (epochs {FEE_EPOCH_START}–{FEE_EPOCH_END}). Fees are
               currently paused.
             </p>
           </CardContent>

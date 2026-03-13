@@ -34,14 +34,14 @@ export function StatsRibbon({
   const totalLinks = snapshot.contributors.reduce((sum, c) => sum + c.linkCount, 0);
 
   return (
-    <div className="flex items-center justify-between rounded-xl bg-cream-5 border border-cream-8 px-5 py-3">
-      <div className="flex items-center gap-6 text-sm">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl bg-cream-5 border border-cream-8 px-5 py-3">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-2 sm:flex sm:items-center sm:gap-6 text-sm">
         <Stat label="Contributors" value={formatNumber(snapshot.contributors.length)} />
-        <span className="text-cream-10">|</span>
+        <span className="text-cream-15 hidden sm:block">|</span>
         <Stat label="Links" value={formatNumber(totalLinks)} />
-        <span className="text-cream-10">|</span>
+        <span className="text-cream-15 hidden sm:block">|</span>
         <Stat label="Cities" value={formatNumber(snapshot.locations.length)} />
-        <span className="text-cream-10">|</span>
+        <span className="text-cream-15 hidden sm:block">|</span>
         <Stat
           label="Avg Fee/Epoch"
           value={feesLoading ? "..." : avgFee > 0 ? `${formatSolFromSol(avgFee)} SOL` : "—"}
