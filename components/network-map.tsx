@@ -46,8 +46,8 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
   const [selectedContributor, setSelectedContributor] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
-  const [zoom, setZoom] = useState(1.8);
-  const [center, setCenter] = useState<[number, number]>([10, 35]);
+  const [zoom, setZoom] = useState(1);
+  const [center, setCenter] = useState<[number, number]>([10, 25]);
 
   // Build unique city coordinates with enriched data
   const cities = useMemo(() => {
@@ -155,8 +155,8 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
   const handleZoomIn = () => setZoom((z) => Math.min(z * 1.5, 8));
   const handleZoomOut = () => setZoom((z) => Math.max(z / 1.5, 1));
   const handleReset = () => {
-    setZoom(1.8);
-    setCenter([10, 35]);
+    setZoom(1);
+    setCenter([10, 25]);
   };
 
   const handleCityClick = (code: string, city: CityInfo) => {
@@ -186,8 +186,8 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
             <ComposableMap
               projection="geoMercator"
               projectionConfig={{
-                scale: 130,
-                center: [10, 35],
+                scale: 100,
+                center: [10, 25],
               }}
               style={{ width: "100%", height: "auto" }}
               viewBox="0 0 800 420"
@@ -231,7 +231,7 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                       from={arc.from}
                       to={arc.to}
                       stroke={getContributorColor(arc.contributor)}
-                      strokeWidth={(active ? 1.5 : 0.8) / zoom}
+                      strokeWidth={(active ? 1.2 : 0.5) / zoom}
                       strokeOpacity={active ? 0.7 : 0.15}
                       strokeLinecap="round"
                     />
@@ -306,7 +306,7 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                         style={{ cursor: "pointer" }}
                       />
                       {/* Label — show when zoomed, selected, or filtering */}
-                      {(isSelected || (active && (selectedContributor || zoom > 2 || city.contributors.length >= 3))) && (
+                      {(isSelected || (active && (selectedContributor || zoom > 1.5 || city.contributors.length >= 3))) && (
                         <text
                           textAnchor="middle"
                           y={-(baseR + 4 / zoom)}

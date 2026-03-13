@@ -9,9 +9,15 @@ interface ContributorDetailProps {
   contributor: Contributor;
 }
 
+function getHealthBadgeClass(health: string): string {
+  if (health === "Healthy") return "bg-green/10 text-green border-green/20";
+  if (health === "Pending") return "bg-amber/10 text-amber border-amber/20";
+  return "bg-red/10 text-red border-red/20";
+}
+
 export function ContributorDetail({ contributor }: ContributorDetailProps) {
   return (
-    <div className="bg-cream-5 border-t border-cream-8 p-6 space-y-6">
+    <div className="space-y-6">
       {/* Links */}
       <div>
         <h4 className="flex items-center gap-2 text-sm font-medium text-cream-60 mb-3">
@@ -22,40 +28,38 @@ export function ContributorDetail({ contributor }: ContributorDetailProps) {
           {contributor.links.map((link) => (
             <div
               key={link.pubkey}
-              className="flex items-center gap-4 rounded-lg bg-cream-5 border border-cream-8 px-4 py-2.5 text-sm"
+              className="flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-lg bg-cream-5 border border-cream-8 px-4 py-2.5 text-sm"
             >
-              <div className="flex items-center gap-2 min-w-[180px]">
-                <MapPin className="size-3 text-cream-30" />
+              <div className="flex items-center gap-2 min-w-[120px]">
+                <MapPin className="size-3 text-cream-30 shrink-0" />
                 <span className="text-cream-80">
                   {link.sideA.city || link.sideA.locationCode}
                 </span>
               </div>
               <span className="text-cream-20">→</span>
-              <div className="flex items-center gap-2 min-w-[180px]">
-                <MapPin className="size-3 text-cream-30" />
+              <div className="flex items-center gap-2 min-w-[120px]">
+                <MapPin className="size-3 text-cream-30 shrink-0" />
                 <span className="text-cream-80">
                   {link.sideZ.city || link.sideZ.locationCode}
                 </span>
               </div>
-              <Badge variant="secondary" className="text-xs">
-                {link.linkType}
-              </Badge>
-              <span className="text-cream-40 text-xs">
-                {formatLatencyMs(link.delayMs * 1_000_000)}
-              </span>
-              <span className="text-cream-40 text-xs">
-                {formatBandwidth(link.bandwidthGbps)}
-              </span>
-              <Badge
-                variant="secondary"
-                className={
-                  link.health === "Healthy"
-                    ? "bg-green/10 text-green border-green/20"
-                    : "bg-red/10 text-red border-red/20"
-                }
-              >
-                {link.health}
-              </Badge>
+              <div className="flex items-center gap-2 ml-auto">
+                <Badge variant="secondary" className="text-xs">
+                  {link.linkType}
+                </Badge>
+                <span className="text-cream-40 text-xs">
+                  {formatLatencyMs(link.delayMs * 1_000_000)}
+                </span>
+                <span className="text-cream-40 text-xs">
+                  {formatBandwidth(link.bandwidthGbps)}
+                </span>
+                <Badge
+                  variant="secondary"
+                  className={getHealthBadgeClass(link.health)}
+                >
+                  {link.health}
+                </Badge>
+              </div>
             </div>
           ))}
         </div>
@@ -67,7 +71,7 @@ export function ContributorDetail({ contributor }: ContributorDetailProps) {
           <Server className="size-4" />
           Devices ({contributor.deviceCount})
         </h4>
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {contributor.devices.map((device) => (
             <div
               key={device.pubkey}
