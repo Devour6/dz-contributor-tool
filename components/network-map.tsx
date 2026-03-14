@@ -162,6 +162,32 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
     [selectedContributor, selectedCity, arcs]
   );
 
+  // Label collision detection — only show labels that won't overlap
+  const visibleLabels = useMemo(() => {
+    const cityList = Object.values(cities);
+    // Sort by importance: more contributors/links = higher priority
+    const sorted = [...cityList].sort(
+      (a, b) => b.contributors.length * 10 + b.linkCount - (a.contributors.length * 10 + a.linkCount)
+    );
+    // Minimum distance in degrees before labels overlap (shrinks with zoom)
+    const minDist = 12 / zoom;
+    const placed: { lng: number; lat: number }[] = [];
+    const labels = new Set<string>();
+
+    for (const city of sorted) {
+      const tooClose = placed.some((p) => {
+        const dLng = Math.abs(city.lng - p.lng);
+        const dLat = Math.abs(city.lat - p.lat);
+        return dLng < minDist && dLat < minDist * 0.6;
+      });
+      if (!tooClose) {
+        labels.add(city.key);
+        placed.push({ lng: city.lng, lat: city.lat });
+      }
+    }
+    return labels;
+  }, [cities, zoom]);
+
   // Selected contributor stats
   const selectedContributorData = useMemo(() => {
     if (!selectedContributor) return null;
@@ -326,8 +352,8 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                         }
                         style={{ cursor: "pointer" }}
                       />
-                      {/* Label — show for major hubs at default zoom, all when zoomed in */}
-                      {(isSelected || (active && (selectedContributor || zoom > 1.5 || city.contributors.length >= 3))) && (
+                      {/* Label — collision-detected placement */}
+                      {(isSelected || (active && (selectedContributor || visibleLabels.has(city.key)))) && (
                         <text
                           textAnchor="middle"
                           y={-(baseR + 4 / zoom)}
