@@ -18,7 +18,7 @@ import {
   CONTRIBUTOR_SHARE,
 } from "@/lib/constants/config";
 import { formatPercent, formatSolFromSol } from "@/lib/utils/format";
-import { Cable, MapPin, Server, ZoomIn, ZoomOut, Maximize2, X } from "lucide-react";
+import { ZoomIn, ZoomOut, Maximize2, X } from "lucide-react";
 
 const GEO_URL = "/world-110m.json";
 
@@ -471,21 +471,15 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                   </div>
                   <div className="space-y-2 text-xs">
                     <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-cream-40">
-                        <Cable className="size-3" /> Links
-                      </span>
+                      <span className="text-cream-40">Links</span>
                       <span className="text-cream">{selectedContributorData.linkCount}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-cream-40">
-                        <MapPin className="size-3" /> Cities
-                      </span>
+                      <span className="text-cream-40">Cities</span>
                       <span className="text-cream">{selectedContributorData.cities.length}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-cream-40">
-                        <Server className="size-3" /> Devices
-                      </span>
+                      <span className="text-cream-40">Devices</span>
                       <span className="text-cream">{selectedContributorData.deviceCount}</span>
                     </div>
                     <div className="mt-2 pt-2 border-t border-cream-8">

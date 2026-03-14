@@ -19,7 +19,6 @@ import {
   CONTRIBUTOR_SHARE,
 } from "@/lib/constants/config";
 import { formatPercent, formatSolFromSol } from "@/lib/utils/format";
-import { Cable, MapPin, Server } from "lucide-react";
 
 interface ContributorGridProps {
   contributors: Contributor[];
@@ -88,18 +87,9 @@ export function ContributorGrid({ contributors, feeHistory, shapleyLoaded }: Con
                 {/* Quick stats */}
                 <DialogDescription asChild>
                   <div className="flex items-center gap-4 text-sm text-cream-60">
-                    <span className="flex items-center gap-1.5">
-                      <Cable className="size-3.5 text-cream-30" />
-                      {selectedContributor.linkCount} links
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <MapPin className="size-3.5 text-cream-30" />
-                      {selectedContributor.cities.length} cities
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <Server className="size-3.5 text-cream-30" />
-                      {selectedContributor.deviceCount} devices
-                    </span>
+                    <span>{selectedContributor.linkCount} links</span>
+                    <span>{selectedContributor.cities.length} cities</span>
+                    <span>{selectedContributor.deviceCount} devices</span>
                   </div>
                 </DialogDescription>
 

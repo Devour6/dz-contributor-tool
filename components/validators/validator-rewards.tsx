@@ -19,7 +19,7 @@ import {
   shortenPubkey,
 } from "@/lib/utils/format";
 import { LAMPORTS_PER_SOL, FEE_EPOCH_START, FEE_EPOCH_END } from "@/lib/constants/config";
-import { Search, AlertTriangle, Users, Coins, ShieldCheck, Activity, Loader2 } from "lucide-react";
+import { Search, AlertTriangle, Loader2 } from "lucide-react";
 
 interface ValidatorRewardsProps {
   rewards: ValidatorRewardsSummary | null;
@@ -104,25 +104,21 @@ export function ValidatorRewards({ rewards, isLoading }: ValidatorRewardsProps) 
       {/* Summary metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <MetricCard
-          icon={<Users className="size-4 text-cream-30" />}
           label="Publishing validators"
           value={formatNumber(rewards.publishingValidatorCount)}
           note={`of ${formatNumber(rewards.validators.length)} connected`}
         />
         <MetricCard
-          icon={<Coins className="size-4 text-cream-30" />}
           label="Publishing stake"
           value={`${formatSolFromSol(rewards.totalPublishingStake / LAMPORTS_PER_SOL, 0)} SOL`}
           note="Combined activated stake"
         />
         <MetricCard
-          icon={<ShieldCheck className="size-4 text-cream-30" />}
           label="Validator pool / epoch"
           value={`${formatSolFromSol(rewards.projectedValidatorPoolPerEpochSol)} SOL`}
           note="45% of total fees"
         />
         <MetricCard
-          icon={<Activity className="size-4 text-cream-30" />}
           label="Avg reward / epoch"
           value={`${formatSolFromSol(avgReward, 4)} SOL`}
           note="Per publishing validator"
@@ -278,21 +274,16 @@ function MetricCard({
   label,
   value,
   note,
-  icon,
 }: {
   label: string;
   value: string;
   note?: string;
-  icon?: React.ReactNode;
 }) {
   return (
     <Card className="bg-cream-5 border-cream-8">
       <CardContent className="pt-4 pb-4">
         <p className="text-xs text-cream-40 mb-1">{label}</p>
-        <div className="flex items-center gap-2">
-          {icon}
-          <p className="text-xl font-display text-cream">{value}</p>
-        </div>
+        <p className="text-xl font-display text-cream">{value}</p>
         {note && <p className="text-xs text-cream-20 mt-1">{note}</p>}
       </CardContent>
     </Card>

@@ -10,7 +10,7 @@ import {
   CONTRIBUTOR_SHARE,
 } from "@/lib/constants/config";
 import { formatPercent, formatSolFromSol } from "@/lib/utils/format";
-import { ChevronRight, MapPin, Cable, Server } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
 interface ContributorCardProps {
   contributor: Contributor;
@@ -54,18 +54,9 @@ export function ContributorCard({ contributor, feeHistory, onSelect }: Contribut
 
         {/* Quick stats */}
         <div className="flex items-center gap-4 text-sm text-cream-60">
-          <span className="flex items-center gap-1.5">
-            <Cable className="size-3.5 text-cream-30" />
-            {contributor.linkCount} links
-          </span>
-          <span className="flex items-center gap-1.5">
-            <MapPin className="size-3.5 text-cream-30" />
-            {contributor.cities.length} cities
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Server className="size-3.5 text-cream-30" />
-            {contributor.deviceCount} devices
-          </span>
+          <span>{contributor.linkCount} links</span>
+          <span>{contributor.cities.length} cities</span>
+          <span>{contributor.deviceCount} devices</span>
         </div>
 
         {/* Reward share bar */}
