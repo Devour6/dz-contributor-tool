@@ -34,8 +34,8 @@ export function StatsRibbon({
   const totalLinks = snapshot.contributors.reduce((sum, c) => sum + c.linkCount, 0);
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl bg-cream-5 border border-cream-8 px-5 py-3">
-      <div className="grid grid-cols-2 gap-x-6 gap-y-2 sm:flex sm:items-center sm:gap-6 text-sm">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl bg-cream-5 border border-cream-8 px-4 sm:px-5 py-3">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-2 sm:flex sm:items-center sm:gap-6 text-xs sm:text-sm">
         <Stat label="Contributors" value={formatNumber(snapshot.contributors.length)} />
         <span className="text-cream-15 hidden sm:block">|</span>
         <Stat label="Links" value={formatNumber(totalLinks)} />

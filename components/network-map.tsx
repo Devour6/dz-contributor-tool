@@ -237,7 +237,7 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                 scale: PROJECTION_SCALE,
               }}
               width={800}
-              height={360}
+              height={320}
               style={{ width: "100%", height: "auto" }}
             >
               <ZoomableGroup
@@ -420,22 +420,22 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
             )}
 
             {/* Zoom controls */}
-            <div className="absolute top-3 right-3 flex flex-col gap-1">
+            <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex flex-col gap-1">
               <button
                 onClick={handleZoomIn}
-                className="rounded-md bg-dark/80 border border-cream-8 p-1.5 text-cream-40 hover:text-cream hover:border-cream-15 transition-colors"
+                className="rounded-md bg-dark/80 border border-cream-8 p-2 sm:p-1.5 text-cream-40 hover:text-cream hover:border-cream-15 transition-colors"
               >
                 <ZoomIn className="size-4" />
               </button>
               <button
                 onClick={handleZoomOut}
-                className="rounded-md bg-dark/80 border border-cream-8 p-1.5 text-cream-40 hover:text-cream hover:border-cream-15 transition-colors"
+                className="rounded-md bg-dark/80 border border-cream-8 p-2 sm:p-1.5 text-cream-40 hover:text-cream hover:border-cream-15 transition-colors"
               >
                 <ZoomOut className="size-4" />
               </button>
               <button
                 onClick={handleReset}
-                className="rounded-md bg-dark/80 border border-cream-8 p-1.5 text-cream-40 hover:text-cream hover:border-cream-15 transition-colors"
+                className="rounded-md bg-dark/80 border border-cream-8 p-2 sm:p-1.5 text-cream-40 hover:text-cream hover:border-cream-15 transition-colors"
               >
                 <Maximize2 className="size-4" />
               </button>
@@ -456,8 +456,8 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
 
         {/* Detail panel — shows when contributor or city is selected */}
         {(selectedContributorData || selectedCity) && (
-          <div className="absolute left-3 z-40 max-w-[260px]" style={{ top: hasActiveFilter ? 48 : 12 }}>
-            <div className="rounded-xl bg-dark/95 border border-cream-10 p-4 shadow-xl backdrop-blur-sm max-h-[320px] overflow-y-auto">
+          <div className="absolute left-2 sm:left-3 z-40 max-w-[200px] sm:max-w-[260px]" style={{ top: hasActiveFilter ? 48 : 12 }}>
+            <div className="rounded-xl bg-dark/95 border border-cream-10 p-3 sm:p-4 shadow-xl backdrop-blur-sm max-h-[280px] sm:max-h-[320px] overflow-y-auto">
               {selectedContributorData && (
                 <>
                   <div className="flex items-center gap-2 mb-3">
@@ -536,7 +536,7 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
       </div>
 
       {/* Contributor legend */}
-      <div className="flex flex-wrap gap-2 justify-center">
+      <div className="flex flex-wrap gap-1.5 sm:gap-2 justify-center">
         {snapshot.contributors
           .filter((c) => c.linkCount > 0)
           .sort((a, b) => b.linkCount - a.linkCount)

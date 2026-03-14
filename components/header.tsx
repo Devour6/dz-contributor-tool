@@ -37,7 +37,7 @@ export function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-cream-8 bg-dark/80 backdrop-blur-sm px-6 py-3">
+    <header className="sticky top-0 z-50 border-b border-cream-8 bg-dark/80 backdrop-blur-sm px-4 sm:px-6 py-3">
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         <div className="flex items-center gap-3">
           <h1 className="font-display text-xl tracking-wide text-cream">
@@ -87,13 +87,13 @@ export function Header() {
 
       {/* Mobile dropdown */}
       {menuOpen && (
-        <nav className="sm:hidden mt-3 pb-1 border-t border-cream-8 pt-3 flex flex-col gap-3">
+        <nav className="sm:hidden mt-3 pb-1 border-t border-cream-8 pt-3 flex flex-col">
           {NAV_LINKS.map((link) => (
             <a
               key={link.href}
               href={link.href}
               onClick={() => setMenuOpen(false)}
-              className={`text-sm transition-colors ${
+              className={`text-sm transition-colors py-2 ${
                 activeSection === link.href.slice(1)
                   ? "text-cream"
                   : "text-cream-40 hover:text-cream"

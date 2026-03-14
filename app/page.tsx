@@ -75,7 +75,7 @@ export default function Home() {
       ) : enrichedSnapshot ? (
         <>
           {/* Hero: Network Map — full width, first thing after header */}
-          <section id="network" className="px-6 pt-4 pb-8 mx-auto max-w-7xl">
+          <section id="network" className="px-4 sm:px-6 pt-2 sm:pt-4 pb-4 sm:pb-8 mx-auto max-w-7xl">
             <SectionHeading
               title="The DoubleZero Network"
             />
@@ -85,7 +85,7 @@ export default function Home() {
           </section>
 
           {/* Rest of page */}
-          <main className="mx-auto max-w-7xl px-6 pb-6 space-y-16">
+          <main className="mx-auto max-w-7xl px-4 sm:px-6 pb-6 space-y-10 sm:space-y-16">
             {/* Stats ribbon — below the hero map */}
             <StatsRibbon
               snapshot={enrichedSnapshot}

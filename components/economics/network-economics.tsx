@@ -33,7 +33,7 @@ export function NetworkEconomics({ feeHistory, snapshot }: NetworkEconomicsProps
   return (
     <div className="space-y-6">
       {/* Key metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <MetricCard
           label="Total fees collected"
           value={`${formatSolFromSol(feeHistory.totalFeeSol)} SOL`}
@@ -78,7 +78,7 @@ export function NetworkEconomics({ feeHistory, snapshot }: NetworkEconomicsProps
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-end gap-[2px] h-32">
+          <div className="flex items-end gap-[1px] sm:gap-[2px] h-24 sm:h-32">
             {feeHistory.epochs.slice(-40).map((e) => {
               const maxFee = Math.max(
                 ...feeHistory.epochs.slice(-40).map((ep) => ep.totalFeeSol)
@@ -132,7 +132,7 @@ function MetricCard({
         <p className="text-xs text-cream-40 mb-1">{label}</p>
         <div className="flex items-center gap-2">
           {icon}
-          <p className="text-xl font-display text-cream">{value}</p>
+          <p className="text-lg sm:text-xl font-display text-cream">{value}</p>
         </div>
         {note && <p className="text-xs text-cream-20 mt-1">{note}</p>}
       </CardContent>

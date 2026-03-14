@@ -182,12 +182,12 @@ export function LinkPlanner({ snapshot, feeHistory }: LinkPlannerProps) {
               <p className="text-cream-60 text-sm mb-1">
                 Estimated reward share for this route
               </p>
-              <p className="text-4xl font-display text-cream">
+              <p className="text-2xl sm:text-4xl font-display text-cream">
                 {formatPercent(projection.share)}
               </p>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-center">
               <div className="rounded-xl bg-cream-5 border border-cream-8 p-4">
                 <p className="text-xs text-cream-40 mb-1">Per Epoch</p>
                 <p className="text-lg font-display text-cream">

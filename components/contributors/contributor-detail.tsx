@@ -28,7 +28,7 @@ export function ContributorDetail({ contributor }: ContributorDetailProps) {
           {contributor.links.map((link) => (
             <div
               key={link.pubkey}
-              className="flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-lg bg-cream-5 border border-cream-8 px-4 py-2.5 text-sm"
+              className="flex flex-wrap items-center gap-x-2 sm:gap-x-4 gap-y-1.5 rounded-lg bg-cream-5 border border-cream-8 px-3 sm:px-4 py-2 sm:py-2.5 text-sm"
             >
               <div className="flex items-center gap-2 min-w-[120px]">
                 <MapPin className="size-3 text-cream-30 shrink-0" />
@@ -71,7 +71,7 @@ export function ContributorDetail({ contributor }: ContributorDetailProps) {
           <Server className="size-4" />
           Devices ({contributor.deviceCount})
         </h4>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {contributor.devices.map((device) => (
             <div
               key={device.pubkey}

@@ -41,8 +41,8 @@ function DialogContent({
         {...props}
       >
         {children}
-        <RadixDialog.Close className="absolute right-4 top-4 rounded-md p-1 text-cream-30 hover:text-cream transition-colors focus:outline-none">
-          <X className="size-4" />
+        <RadixDialog.Close className="absolute right-3 top-3 sm:right-4 sm:top-4 rounded-md p-1.5 sm:p-1 text-cream-30 hover:text-cream transition-colors focus:outline-none">
+          <X className="size-5 sm:size-4" />
           <span className="sr-only">Close</span>
         </RadixDialog.Close>
       </RadixDialog.Content>
@@ -56,7 +56,7 @@ function DialogHeader({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("flex flex-col gap-2 p-6 pb-0", className)}
+      className={cn("flex flex-col gap-2 p-4 sm:p-6 pb-0", className)}
       {...props}
     />
   );
