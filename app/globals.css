@@ -62,6 +62,23 @@
   }
 }
 
+/* Map link flow animation */
+@keyframes link-flow {
+  to { stroke-dashoffset: -24; }
+}
+.link-flow {
+  animation: link-flow 1.5s linear infinite;
+}
+
+/* Map city dot pulse */
+@keyframes dot-pulse {
+  0%, 100% { opacity: 0.06; }
+  50% { opacity: 0.12; }
+}
+.dot-pulse {
+  animation: dot-pulse 3s ease-in-out infinite;
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;

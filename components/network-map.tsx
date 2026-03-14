@@ -282,6 +282,9 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                       strokeWidth={(active ? 1.2 : 0.5) / zoom}
                       strokeOpacity={active ? 0.7 : 0.15}
                       strokeLinecap="round"
+                      strokeDasharray={active ? `${4 / zoom} ${2 / zoom}` : undefined}
+                      className={active ? "link-flow" : undefined}
+                      style={active ? { animationDuration: `${1.5 + Math.random() * 1.5}s` } : undefined}
                     />
                   );
                 })}
@@ -339,6 +342,8 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                       <circle
                         r={glowR}
                         fill="rgba(243,238,217,0.06)"
+                        className={active && !isSelected ? "dot-pulse" : undefined}
+                        style={active && !isSelected ? { animationDelay: `${Math.random() * 3}s` } : undefined}
                       />
                       {/* Dot */}
                       <circle
