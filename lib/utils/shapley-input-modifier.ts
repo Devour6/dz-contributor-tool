@@ -41,24 +41,25 @@ export function modifyShapleyInput(
   const contributor = parsed.contributors.find(
     (c) => c.code === contributorCode
   );
-  if (!contributor) return input;
 
-  // --- Remove links ---
-  for (const pubkey of removeLinkPubkeys) {
-    const link = contributor.links.find((l) => l.pubkey === pubkey);
-    if (!link) continue;
+  // --- Remove links (only if contributor exists) ---
+  if (contributor) {
+    for (const pubkey of removeLinkPubkeys) {
+      const link = contributor.links.find((l) => l.pubkey === pubkey);
+      if (!link) continue;
 
-    const metro1 = locToMetro.get(link.sideA.locationCode);
-    const metro2 = locToMetro.get(link.sideZ.locationCode);
-    if (!metro1 || !metro2) continue;
+      const metro1 = locToMetro.get(link.sideA.locationCode);
+      const metro2 = locToMetro.get(link.sideZ.locationCode);
+      if (!metro1 || !metro2) continue;
 
-    // Remove first matching private_link for this metro pair
-    const idx = input.private_links.findIndex(
-      (pl) =>
-        (pl.device1 === metro1 && pl.device2 === metro2) ||
-        (pl.device1 === metro2 && pl.device2 === metro1)
-    );
-    if (idx !== -1) input.private_links.splice(idx, 1);
+      // Remove first matching private_link for this metro pair
+      const idx = input.private_links.findIndex(
+        (pl) =>
+          (pl.device1 === metro1 && pl.device2 === metro2) ||
+          (pl.device1 === metro2 && pl.device2 === metro1)
+      );
+      if (idx !== -1) input.private_links.splice(idx, 1);
+    }
   }
 
   // --- Add links ---

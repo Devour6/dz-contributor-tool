@@ -37,10 +37,36 @@ import {
   Zap,
 } from "lucide-react";
 
+const NEW_CONTRIBUTOR_VALUE = "__new__";
+
 interface SimulateTabProps {
   snapshot: ParsedSnapshot;
   feeHistory: FeeHistory | undefined;
   selectedEpoch: number | null;
+}
+
+/**
+ * Round a 0-1 ratio to a percentage with `decimals` digits, returning the number.
+ * e.g. roundPct(0.062149, 2) = 6.21
+ */
+function roundPct(ratio: number, decimals = 2): number {
+  const factor = 10 ** decimals;
+  return Math.round(ratio * 100 * factor) / factor;
+}
+
+/**
+ * Format a pre-rounded percentage number as a string.
+ */
+function fmtPct(pct: number, decimals = 2): string {
+  return pct.toFixed(decimals) + "%";
+}
+
+/**
+ * Round a SOL amount for display, keeping full precision until this point.
+ */
+function roundSol(sol: number, decimals = 3): number {
+  const factor = 10 ** decimals;
+  return Math.round(sol * factor) / factor;
 }
 
 export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTabProps) {
@@ -53,7 +79,10 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
   const [simLoading, setSimLoading] = useState(false);
   const [simError, setSimError] = useState<string | null>(null);
 
-  const contributor = snapshot.contributors.find((c) => c.code === contributorCode);
+  const isNewContributor = contributorCode === NEW_CONTRIBUTOR_VALUE;
+  const contributor = isNewContributor
+    ? null
+    : snapshot.contributors.find((c) => c.code === contributorCode);
 
   const sortedContributors = useMemo(
     () =>
@@ -95,7 +124,9 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
     return { text: "Well covered", cls: "text-cream-30" };
   };
 
-  const hasChanges = removedLinks.size > 0 || addedLinks.length > 0;
+  const hasChanges = isNewContributor
+    ? addedLinks.length > 0
+    : removedLinks.size > 0 || addedLinks.length > 0;
   const avgFee = feeHistory?.averageFeeSol || 0;
 
   const handleContributorChange = (code: string) => {
@@ -139,13 +170,14 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
     setSimLoading(true);
     setSimError(null);
     try {
+      const apiCode = isNewContributor ? `new_contributor_sim` : contributorCode;
       const res = await fetch("/api/shapley/simulate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           epoch: selectedEpoch,
-          contributorCode,
-          removeLinks: Array.from(removedLinks),
+          contributorCode: apiCode,
+          removeLinks: isNewContributor ? [] : Array.from(removedLinks),
           addLinks: addedLinks,
         }),
       });
@@ -167,6 +199,35 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
     return city ? `${city.locationName}` : locationCode;
   };
 
+  // --- Consistent rounding for results ---
+  // Round before & after from full precision, then derive delta from the rounded values.
+  // This ensures before + delta = after visually.
+  const results = useMemo(() => {
+    if (!simResult) return null;
+    const beforePct = roundPct(simResult.before.share);
+    const afterPct = roundPct(simResult.after.share);
+    const deltaPct = Math.round((afterPct - beforePct) * 100) / 100; // keep 2 decimals
+
+    // SOL: compute from full-precision shares, round only at display
+    const beforeSolEpoch = simResult.before.share * avgFee * CONTRIBUTOR_SHARE;
+    const afterSolEpoch = simResult.after.share * avgFee * CONTRIBUTOR_SHARE;
+    const deltaSolEpoch = afterSolEpoch - beforeSolEpoch;
+
+    return {
+      beforePct, afterPct, deltaPct,
+      beforeSolEpoch: roundSol(beforeSolEpoch),
+      afterSolEpoch: roundSol(afterSolEpoch),
+      deltaSolEpoch: roundSol(deltaSolEpoch),
+      beforeSolMonthly: roundSol(beforeSolEpoch * 12, 2),
+      afterSolMonthly: roundSol(afterSolEpoch * 12, 2),
+      beforeSolYearly: roundSol(beforeSolEpoch * 144, 2),
+      afterSolYearly: roundSol(afterSolEpoch * 144, 2),
+    };
+  }, [simResult, avgFee]);
+
+  const showExistingLinks = contributor && !isNewContributor;
+  const showAddLinks = contributorCode !== "";
+
   return (
     <div className="space-y-6">
       {/* Disclaimer */}
@@ -186,7 +247,7 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
             Select your contributor
           </CardTitle>
           <CardDescription className="text-cream-40">
-            Choose which network operator to simulate changes for
+            Choose an existing operator or simulate as a new contributor
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -195,6 +256,12 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
               <SelectValue placeholder="Choose a contributor..." />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value={NEW_CONTRIBUTOR_VALUE}>
+                <span className="flex items-center gap-2">
+                  <Plus className="size-3 text-green" />
+                  <span className="text-green">New contributor</span>
+                </span>
+              </SelectItem>
               {sortedContributors.map((c) => (
                 <SelectItem key={c.code} value={c.code}>
                   <span className="flex items-center gap-2">
@@ -212,8 +279,8 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
         </CardContent>
       </Card>
 
-      {/* Step 2: Current links with remove toggles */}
-      {contributor && (
+      {/* Step 2: Current links with remove toggles (only for existing contributors) */}
+      {showExistingLinks && (
         <Card className="bg-cream-5 border-cream-8">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -270,14 +337,16 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
       )}
 
       {/* Step 3: Add new links */}
-      {contributor && (
+      {showAddLinks && (
         <Card className="bg-cream-5 border-cream-8">
           <CardHeader>
             <CardTitle className="font-display text-sm tracking-wide text-cream">
-              Add new links
+              {isNewContributor ? "Your links" : "Add new links"}
             </CardTitle>
             <CardDescription className="text-cream-40">
-              Simulate adding new fiber routes to the network
+              {isNewContributor
+                ? "Add the fiber routes you plan to contribute to the network"
+                : "Simulate adding new fiber routes to the network"}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -364,7 +433,9 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
             {/* Added links list */}
             {addedLinks.length > 0 && (
               <div className="space-y-2">
-                <p className="text-xs text-cream-30">Links to add:</p>
+                <p className="text-xs text-cream-30">
+                  {isNewContributor ? "Your planned links:" : "Links to add:"}
+                </p>
                 {addedLinks.map((link, i) => (
                   <div
                     key={i}
@@ -389,7 +460,7 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
       )}
 
       {/* Step 4: Calculate button */}
-      {contributor && (
+      {showAddLinks && (
         <button
           onClick={handleSimulate}
           disabled={!hasChanges || simLoading}
@@ -414,7 +485,7 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
       )}
 
       {/* Step 5: Results */}
-      {simResult && contributor && (
+      {simResult && results && (
         <Card className="bg-cream-5 border-cream-8">
           <CardHeader>
             <CardTitle className="font-display text-sm tracking-wide text-cream">
@@ -426,45 +497,47 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* Before */}
               <div className="rounded-xl bg-cream-3 border border-cream-8 p-4 text-center">
-                <p className="text-xs text-cream-40 mb-1">Current share</p>
+                <p className="text-xs text-cream-40 mb-1">
+                  {isNewContributor ? "Before you join" : "Current share"}
+                </p>
                 <p className="text-2xl font-display text-cream">
-                  {formatPercent(simResult.before.share)}
+                  {fmtPct(results.beforePct)}
                 </p>
                 {avgFee > 0 && (
                   <p className="text-xs text-cream-30 mt-1">
-                    ~{formatSolFromSol(simResult.before.share * avgFee * CONTRIBUTOR_SHARE, 3)} SOL/epoch
+                    ~{formatSolFromSol(results.beforeSolEpoch, 3)} SOL/epoch
                   </p>
                 )}
               </div>
 
-              {/* Delta */}
+              {/* Delta — derived from rounded before/after so arithmetic is visually consistent */}
               <div className="rounded-xl bg-cream-3 border border-cream-8 p-4 text-center flex flex-col items-center justify-center">
                 <p className="text-xs text-cream-40 mb-1">Change</p>
                 <div className="flex items-center gap-1">
-                  {simResult.delta.share > 0.0001 ? (
+                  {results.deltaPct > 0.001 ? (
                     <ArrowUpRight className="size-5 text-green" />
-                  ) : simResult.delta.share < -0.0001 ? (
+                  ) : results.deltaPct < -0.001 ? (
                     <ArrowDownRight className="size-5 text-red-400" />
                   ) : (
                     <Minus className="size-5 text-cream-30" />
                   )}
                   <span
                     className={`text-2xl font-display ${
-                      simResult.delta.share > 0.0001
+                      results.deltaPct > 0.001
                         ? "text-green"
-                        : simResult.delta.share < -0.0001
+                        : results.deltaPct < -0.001
                         ? "text-red-400"
                         : "text-cream-30"
                     }`}
                   >
-                    {simResult.delta.share > 0 ? "+" : ""}
-                    {formatPercent(simResult.delta.share)}
+                    {results.deltaPct > 0 ? "+" : ""}
+                    {fmtPct(results.deltaPct)}
                   </span>
                 </div>
                 {avgFee > 0 && (
                   <p className="text-xs text-cream-30 mt-1">
-                    {simResult.delta.share >= 0 ? "+" : ""}
-                    {formatSolFromSol(simResult.delta.share * avgFee * CONTRIBUTOR_SHARE, 3)} SOL/epoch
+                    {results.deltaSolEpoch >= 0 ? "+" : ""}
+                    {formatSolFromSol(results.deltaSolEpoch, 3)} SOL/epoch
                   </p>
                 )}
               </div>
@@ -473,11 +546,11 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
               <div className="rounded-xl bg-cream-3 border border-cream-8 p-4 text-center">
                 <p className="text-xs text-cream-40 mb-1">Projected share</p>
                 <p className="text-2xl font-display text-cream">
-                  {formatPercent(simResult.after.share)}
+                  {fmtPct(results.afterPct)}
                 </p>
                 {avgFee > 0 && (
                   <p className="text-xs text-cream-30 mt-1">
-                    ~{formatSolFromSol(simResult.after.share * avgFee * CONTRIBUTOR_SHARE, 3)} SOL/epoch
+                    ~{formatSolFromSol(results.afterSolEpoch, 3)} SOL/epoch
                   </p>
                 )}
               </div>
@@ -489,20 +562,24 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
                 <div className="rounded-xl bg-cream-3 border border-cream-8 p-4 text-center">
                   <p className="text-xs text-cream-40 mb-1">Projected monthly</p>
                   <p className="text-lg font-display text-cream">
-                    {formatSolFromSol(simResult.after.share * avgFee * CONTRIBUTOR_SHARE * 12)} SOL
+                    {formatSolFromSol(results.afterSolMonthly)} SOL
                   </p>
-                  <p className="text-xs text-cream-20 mt-0.5">
-                    was {formatSolFromSol(simResult.before.share * avgFee * CONTRIBUTOR_SHARE * 12)} SOL
-                  </p>
+                  {!isNewContributor && (
+                    <p className="text-xs text-cream-20 mt-0.5">
+                      was {formatSolFromSol(results.beforeSolMonthly)} SOL
+                    </p>
+                  )}
                 </div>
                 <div className="rounded-xl bg-cream-3 border border-cream-8 p-4 text-center">
                   <p className="text-xs text-cream-40 mb-1">Projected yearly</p>
                   <p className="text-lg font-display text-cream">
-                    {formatSolFromSol(simResult.after.share * avgFee * CONTRIBUTOR_SHARE * 144)} SOL
+                    {formatSolFromSol(results.afterSolYearly)} SOL
                   </p>
-                  <p className="text-xs text-cream-20 mt-0.5">
-                    was {formatSolFromSol(simResult.before.share * avgFee * CONTRIBUTOR_SHARE * 144)} SOL
-                  </p>
+                  {!isNewContributor && (
+                    <p className="text-xs text-cream-20 mt-0.5">
+                      was {formatSolFromSol(results.beforeSolYearly)} SOL
+                    </p>
+                  )}
                 </div>
               </div>
             )}
@@ -515,8 +592,11 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
                   .filter((c) => c.beforeShare > 0 || c.afterShare > 0)
                   .sort((a, b) => b.afterShare - a.afterShare)
                   .map((c) => {
-                    const delta = c.afterShare - c.beforeShare;
-                    const isTarget = c.code === contributorCode;
+                    const bPct = roundPct(c.beforeShare);
+                    const aPct = roundPct(c.afterShare);
+                    const dPct = Math.round((aPct - bPct) * 100) / 100;
+                    const apiCode = isNewContributor ? "new_contributor_sim" : contributorCode;
+                    const isTarget = c.code === apiCode;
                     return (
                       <div
                         key={c.code}
@@ -529,26 +609,26 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
                           style={{ backgroundColor: getContributorColor(c.code) }}
                         />
                         <span className={`flex-1 ${isTarget ? "text-cream font-medium" : "text-cream-60"}`}>
-                          {getContributorDisplayName(c.code)}
+                          {c.code === "new_contributor_sim" ? "You (new)" : getContributorDisplayName(c.code)}
                         </span>
                         <span className="text-cream-40 tabular-nums">
-                          {formatPercent(c.beforeShare)}
+                          {fmtPct(bPct)}
                         </span>
                         <ArrowRight className="size-2.5 text-cream-20" />
                         <span className="text-cream-60 tabular-nums">
-                          {formatPercent(c.afterShare)}
+                          {fmtPct(aPct)}
                         </span>
                         <span
                           className={`tabular-nums w-16 text-right ${
-                            delta > 0.0001
+                            dPct > 0.001
                               ? "text-green"
-                              : delta < -0.0001
+                              : dPct < -0.001
                               ? "text-red-400"
                               : "text-cream-20"
                           }`}
                         >
-                          {delta > 0 ? "+" : ""}
-                          {formatPercent(delta)}
+                          {dPct > 0 ? "+" : ""}
+                          {fmtPct(dPct)}
                         </span>
                       </div>
                     );
