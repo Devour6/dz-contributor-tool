@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 
 const NAV_ITEMS = [
+  { value: "network", label: "Network" },
   { value: "contributors", label: "Contributors" },
   { value: "simulate", label: "Simulate" },
   { value: "validators", label: "Validators" },
