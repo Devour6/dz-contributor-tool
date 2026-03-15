@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <!-- Dark background -->
+  <rect width="32" height="32" rx="4" fill="#0F0E0C"/>
+
+  <!-- Page body -->
+  <path d="M6 3 L20 3 L26 9 L26 29 L6 29 Z" fill="#0F0E0C" stroke="#F3EED9" stroke-width="1.5" stroke-linejoin="round"/>
+
+  <!-- Folded corner -->
+  <path d="M20 3 L20 9 L26 9" fill="none" stroke="#F3EED9" stroke-width="1.5" stroke-linejoin="round"/>
+
+  <!-- Three colored blocks (Phase cream at different opacities) -->
+  <!-- Top-left block -->
+  <rect x="9" y="13" width="5" height="5" fill="#F3EED9" opacity="0.35"/>
+  <!-- Top-right block -->
+  <rect x="15" y="13" width="5" height="5" fill="#F3EED9" opacity="0.55"/>
+  <!-- Bottom-left block -->
+  <rect x="9" y="19" width="5" height="5" fill="#F3EED9" opacity="0.75"/>
+  <!-- Bottom-right block (missing/broken) -->
+  <rect x="15" y="19" width="5" height="5" fill="none" stroke="#F3EED9" stroke-width="0.75" opacity="0.25" stroke-dasharray="1.5 1"/>
+
+  <!-- X mark over the image area (the "broken" indicator) -->
+  <line x1="9" y1="13" x2="20" y2="24" stroke="#F3EED9" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/>
+  <line x1="20" y1="13" x2="9" y2="24" stroke="#F3EED9" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/>
+</svg>
