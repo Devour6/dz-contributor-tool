@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import type { ParsedSnapshot } from "@/lib/types/contributor";
 import type { FeeHistory } from "@/lib/types/fees";
 import type { SimulateResponse } from "@/lib/types/shapley";
@@ -78,6 +78,14 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
   const [simResult, setSimResult] = useState<SimulateResponse | null>(null);
   const [simLoading, setSimLoading] = useState(false);
   const [simError, setSimError] = useState<string | null>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to results when they arrive
+  useEffect(() => {
+    if (simResult && resultsRef.current) {
+      resultsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [simResult]);
 
   const isNewContributor = contributorCode === NEW_CONTRIBUTOR_VALUE;
   const contributor = isNewContributor
@@ -486,7 +494,7 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
 
       {/* Step 5: Results */}
       {simResult && results && (
-        <Card className="bg-cream-5 border-cream-8">
+        <Card ref={resultsRef} className="bg-cream-5 border-cream-8">
           <CardHeader>
             <CardTitle className="font-display text-sm tracking-wide text-cream">
               Simulation results
