@@ -48,6 +48,30 @@ export interface ShapleyOperatorValue {
 
 export type ShapleyOutput = Record<string, ShapleyOperatorValue>;
 
+// Simulation types
+
+export interface SimulateRequest {
+  epoch: number;
+  contributorCode: string;
+  removeLinks: string[];
+  addLinks: Array<{ cityA: string; cityZ: string }>;
+}
+
+export interface SimulateContributorResult {
+  code: string;
+  beforeShare: number;
+  afterShare: number;
+}
+
+export interface SimulateResponse {
+  epoch: number;
+  contributorCode: string;
+  before: { share: number; value: number };
+  after: { share: number; value: number };
+  delta: { share: number };
+  allContributors: SimulateContributorResult[];
+}
+
 export interface ShapleyResponse {
   epoch: number;
   method: string;

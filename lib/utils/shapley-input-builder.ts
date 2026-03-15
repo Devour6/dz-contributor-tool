@@ -14,7 +14,7 @@ import { SHAPLEY_PARAMS } from "@/lib/constants/config";
 // different naming. We build a mapping from location city name to exchange
 // metro code (uppercased) so everything uses the same namespace.
 
-function buildCityNameToMetro(
+export function buildCityNameToMetro(
   raw: RawSnapshot
 ): Map<string, string> {
   const svc = raw.fetch_data.dz_serviceability;
@@ -29,7 +29,7 @@ function buildCityNameToMetro(
   return map;
 }
 
-function buildLocationCodeToMetro(
+export function buildLocationCodeToMetro(
   raw: RawSnapshot,
   cityNameToMetro: Map<string, string>
 ): Map<string, string> {

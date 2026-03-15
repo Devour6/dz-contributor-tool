@@ -6,9 +6,10 @@ import { StatsRibbon } from "@/components/stats-ribbon";
 import { SectionHeading } from "@/components/section-heading";
 import { NetworkMap } from "@/components/network-map";
 import { ContributorGrid } from "@/components/contributors/contributor-grid";
-import { LinkPlanner } from "@/components/planner/link-planner";
+import { SimulateTab } from "@/components/simulator/simulate-tab";
 import { ValidatorRewards } from "@/components/validators/validator-rewards";
 import { NetworkEconomics } from "@/components/economics/network-economics";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useSnapshot } from "@/lib/hooks/use-snapshot";
 import { useFees } from "@/lib/hooks/use-fees";
 import { useEpochs } from "@/lib/hooks/use-epochs";
@@ -18,6 +19,7 @@ import { computeValidatorRewards } from "@/lib/utils/reward-estimator";
 import { Loader2 } from "lucide-react";
 
 export default function Home() {
+  const [activeTab, setActiveTab] = useState("contributors");
   const { data: epochsData, isLoading: epochsLoading } = useEpochs();
   const [selectedEpoch, setSelectedEpoch] = useState<number | null>(null);
 
@@ -59,9 +61,15 @@ export default function Home() {
 
   const isLoading = epochsLoading || snapshotLoading;
 
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    // Scroll tabs into view on mobile
+    document.getElementById("tab-content")?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
     <div className="min-h-screen bg-dark">
-      <Header />
+      <Header activeTab={activeTab} onTabChange={handleTabChange} />
 
       {isLoading ? (
         <div className="flex items-center justify-center py-32">
@@ -74,8 +82,8 @@ export default function Home() {
         </div>
       ) : enrichedSnapshot ? (
         <>
-          {/* Hero: Network Map — full width, first thing after header */}
-          <section id="network" className="px-4 sm:px-6 pt-2 sm:pt-4 pb-4 sm:pb-8 mx-auto max-w-7xl">
+          {/* Persistent hero: Network Map */}
+          <section className="px-4 sm:px-6 pt-2 sm:pt-4 pb-4 sm:pb-6 mx-auto max-w-7xl">
             <SectionHeading
               title="The DoubleZero Network"
             />
@@ -84,9 +92,8 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Rest of page */}
-          <main className="mx-auto max-w-7xl px-4 sm:px-6 pb-6 space-y-10 sm:space-y-16">
-            {/* Stats ribbon — below the hero map */}
+          {/* Persistent: Stats Ribbon */}
+          <div className="mx-auto max-w-7xl px-4 sm:px-6">
             <StatsRibbon
               snapshot={enrichedSnapshot}
               feeHistory={feeHistory}
@@ -95,55 +102,73 @@ export default function Home() {
               selectedEpoch={selectedEpoch}
               onEpochChange={setSelectedEpoch}
             />
+          </div>
 
-            {/* Section 2: Contributors */}
-            <section id="contributors" className="space-y-6">
-              <SectionHeading
-                title="Contributors"
-                subtitle={`${enrichedSnapshot.contributors.filter((c) => c.linkCount > 0).length} organizations building the network`}
-              />
-              <ContributorGrid
-                contributors={enrichedSnapshot.contributors}
-                feeHistory={feeHistory}
-                shapleyLoaded={!!shapleyData?.values}
-              />
-            </section>
+          {/* Tabbed content */}
+          <main id="tab-content" className="mx-auto max-w-7xl px-4 sm:px-6 pb-6 mt-6 sm:mt-8">
+            <Tabs value={activeTab} onValueChange={handleTabChange}>
+              {/* Mobile tab strip */}
+              <TabsList variant="line" className="sm:hidden w-full overflow-x-auto mb-6">
+                <TabsTrigger value="contributors">Contributors</TabsTrigger>
+                <TabsTrigger value="simulate">Simulate</TabsTrigger>
+                <TabsTrigger value="validators">Validators</TabsTrigger>
+                <TabsTrigger value="economics">Economics</TabsTrigger>
+              </TabsList>
 
-            {/* Section 3: Plan Your Link */}
-            <section id="plan" className="space-y-6">
-              <SectionHeading
-                title="Plan Your Link"
-                subtitle="See where the network needs coverage and estimate your potential rewards"
-              />
-              <LinkPlanner
-                snapshot={enrichedSnapshot}
-                feeHistory={feeHistory}
-              />
-            </section>
+              <TabsContent value="contributors">
+                <section className="space-y-6">
+                  <SectionHeading
+                    title="Contributors"
+                    subtitle={`${enrichedSnapshot.contributors.filter((c) => c.linkCount > 0).length} organizations building the network`}
+                  />
+                  <ContributorGrid
+                    contributors={enrichedSnapshot.contributors}
+                    feeHistory={feeHistory}
+                    shapleyLoaded={!!shapleyData?.values}
+                  />
+                </section>
+              </TabsContent>
 
-            {/* Section 4: Validator Rewards */}
-            <section id="validators" className="space-y-6">
-              <SectionHeading
-                title="Validator Rewards"
-                subtitle="Current epoch publishers and projected reward distribution under the 45/45/10 split"
-              />
-              <ValidatorRewards
-                rewards={validatorRewards}
-                isLoading={publishersLoading || feesLoading}
-              />
-            </section>
+              <TabsContent value="simulate">
+                <section className="space-y-6">
+                  <SectionHeading
+                    title="Simulate"
+                    subtitle="Model link changes and see Shapley-based reward impact"
+                  />
+                  <SimulateTab
+                    snapshot={enrichedSnapshot}
+                    feeHistory={feeHistory}
+                    selectedEpoch={selectedEpoch}
+                  />
+                </section>
+              </TabsContent>
 
-            {/* Section 5: Network Economics */}
-            <section id="economics" className="space-y-6">
-              <SectionHeading
-                title="Network Economics"
-                subtitle="Historical fee data and reward distribution"
-              />
-              <NetworkEconomics
-                feeHistory={feeHistory}
-                snapshot={enrichedSnapshot}
-              />
-            </section>
+              <TabsContent value="validators">
+                <section className="space-y-6">
+                  <SectionHeading
+                    title="Validator Rewards"
+                    subtitle="Current epoch publishers and projected reward distribution under the 45/45/10 split"
+                  />
+                  <ValidatorRewards
+                    rewards={validatorRewards}
+                    isLoading={publishersLoading || feesLoading}
+                  />
+                </section>
+              </TabsContent>
+
+              <TabsContent value="economics">
+                <section className="space-y-6">
+                  <SectionHeading
+                    title="Network Economics"
+                    subtitle="Historical fee data and reward distribution"
+                  />
+                  <NetworkEconomics
+                    feeHistory={feeHistory}
+                    snapshot={enrichedSnapshot}
+                  />
+                </section>
+              </TabsContent>
+            </Tabs>
           </main>
         </>
       ) : (
