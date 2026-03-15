@@ -548,10 +548,25 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                     (city) => city.contributors.includes(c.code)
                   );
                   if (contributorCities.length > 0) {
-                    const avgLng = contributorCities.reduce((s, ct) => s + ct.lng, 0) / contributorCities.length;
-                    const avgLat = contributorCities.reduce((s, ct) => s + ct.lat, 0) / contributorCities.length;
-                    setCenter([avgLng, avgLat]);
-                    setZoom((z) => Math.max(z, 2.5));
+                    // Bounding box of all contributor cities
+                    const lngs = contributorCities.map((ct) => ct.lng);
+                    const lats = contributorCities.map((ct) => ct.lat);
+                    const minLng = Math.min(...lngs);
+                    const maxLng = Math.max(...lngs);
+                    const minLat = Math.min(...lats);
+                    const maxLat = Math.max(...lats);
+
+                    // Center on midpoint
+                    setCenter([(minLng + maxLng) / 2, (minLat + maxLat) / 2]);
+
+                    // Zoom to fit — if span is large, zoom stays low (world view)
+                    const dLng = maxLng - minLng;
+                    const dLat = maxLat - minLat;
+                    const DEG_TO_RAD = Math.PI / 180;
+                    const PAD = 1.5;
+                    const zLng = dLng > 5 ? 800 / (PROJECTION_SCALE * dLng * DEG_TO_RAD * PAD) : 4;
+                    const zLat = dLat > 5 ? 320 / (PROJECTION_SCALE * dLat * DEG_TO_RAD * PAD) : 4;
+                    setZoom(Math.max(1, Math.min(Math.min(zLng, zLat), 6)));
                   }
                 }
               }}
