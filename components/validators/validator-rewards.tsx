@@ -165,7 +165,7 @@ export function ValidatorRewards({ rewards, isLoading }: ValidatorRewardsProps) 
                   {filtered.map((v) => (
                     <TableRow
                       key={v.nodePubkey}
-                      className={`border-cream-8 ${!v.publishingLeaderShreds ? "opacity-40" : ""}`}
+                      className={`border-cream-8 hover:bg-cream-5 transition-colors ${!v.publishingLeaderShreds ? "opacity-40" : ""}`}
                     >
                       <TableCell className="text-cream">
                         <div>

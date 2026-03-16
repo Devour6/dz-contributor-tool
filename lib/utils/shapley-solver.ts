@@ -159,7 +159,8 @@ function applyUptime(
   n: number,
   uptime: number
 ): Float64Array {
-  if (uptime >= 0.9999) return coalitionValues;
+  const clampedUptime = Math.max(0, Math.min(1, uptime));
+  if (clampedUptime >= 0.9999) return coalitionValues;
 
   const nCoalitions = 1 << n;
   const expected = new Float64Array(nCoalitions);
@@ -174,7 +175,7 @@ function applyUptime(
     while (T > 0) {
       const sizeT = popcount(T);
       const prob =
-        Math.pow(uptime, sizeT) * Math.pow(1 - uptime, sizeS - sizeT);
+        Math.pow(clampedUptime, sizeT) * Math.pow(1 - clampedUptime, sizeS - sizeT);
       ev += prob * coalitionValues[T];
       T = (T - 1) & S;
     }
