@@ -1,4 +1,4 @@
-import { CONTRIBUTOR_SHARE, VALIDATOR_SHARE, LAMPORTS_PER_SOL, EPOCHS_PER_MONTH, EPOCHS_PER_YEAR } from "@/lib/constants/config";
+import { CONTRIBUTOR_SHARE, VALIDATOR_SHARE, EPOCHS_PER_MONTH, EPOCHS_PER_YEAR } from "@/lib/constants/config";
 import type { FeeHistory } from "@/lib/types/fees";
 import type {
   PublisherCheckResponse,

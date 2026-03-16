@@ -81,7 +81,7 @@ export function NetworkEconomics({ feeHistory, snapshot }: NetworkEconomicsProps
           <div className="flex items-end gap-[1px] sm:gap-[2px] h-24 sm:h-32">
             {(() => {
               const recent = feeHistory.epochs.slice(-40);
-              const maxFee = Math.max(...recent.map((ep) => ep.totalFeeSol));
+              const maxFee = recent.length > 0 ? Math.max(...recent.map((ep) => ep.totalFeeSol)) : 0;
               return recent.map((e) => {
               const height =
                 maxFee > 0 ? (e.totalFeeSol / maxFee) * 100 : 0;

@@ -130,6 +130,7 @@ export function ValidatorRewards({ rewards, isLoading }: ValidatorRewardsProps) 
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-cream-30" />
         <input
           type="text"
+          aria-label="Search validators"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by validator name, pubkey, or metro..."
