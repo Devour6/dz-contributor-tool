@@ -79,10 +79,10 @@ export function NetworkEconomics({ feeHistory, snapshot }: NetworkEconomicsProps
         </CardHeader>
         <CardContent>
           <div className="flex items-end gap-[1px] sm:gap-[2px] h-24 sm:h-32">
-            {feeHistory.epochs.slice(-40).map((e) => {
-              const maxFee = Math.max(
-                ...feeHistory.epochs.slice(-40).map((ep) => ep.totalFeeSol)
-              );
+            {(() => {
+              const recent = feeHistory.epochs.slice(-40);
+              const maxFee = Math.max(...recent.map((ep) => ep.totalFeeSol));
+              return recent.map((e) => {
               const height =
                 maxFee > 0 ? (e.totalFeeSol / maxFee) * 100 : 0;
               return (
@@ -93,7 +93,7 @@ export function NetworkEconomics({ feeHistory, snapshot }: NetworkEconomicsProps
                   title={`Epoch ${e.solanaEpoch}: ${formatSolFromSol(e.totalFeeSol)} SOL`}
                 />
               );
-            })}
+            })})()}
           </div>
           <div className="flex justify-between text-xs text-cream-20 mt-2">
             <span>

@@ -12,9 +12,12 @@ type Graph = Map<string, GraphEdge[]>;
 // --- Bit manipulation helpers ---
 
 function popcount(n: number): number {
-  n = n - ((n >> 1) & 0x55555555);
-  n = (n & 0x33333333) + ((n >> 2) & 0x33333333);
-  return (((n + (n >> 4)) & 0x0f0f0f0f) * 0x01010101) >> 24;
+  let count = 0;
+  while (n) {
+    count += n & 1;
+    n >>>= 1;
+  }
+  return count;
 }
 
 function precomputeFactorials(n: number): Float64Array {

@@ -239,7 +239,7 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
   return (
     <div className="space-y-6">
       {/* Disclaimer */}
-      <div className="flex items-start gap-2 rounded-lg bg-amber-500/5 border border-amber-500/20 px-3 py-2 text-xs text-amber-400">
+      <div className="flex items-start gap-2 rounded-lg bg-amber/5 border border-amber/20 px-3 py-2 text-xs text-amber">
         <AlertTriangle className="size-3.5 shrink-0 mt-0.5" />
         <span>
           Simulations use Shapley value analysis with historical fee averages (epochs{" "}
@@ -313,18 +313,18 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
                     onClick={() => toggleLink(link.pubkey)}
                     className={`w-full flex items-center gap-3 rounded-lg border px-3 py-2.5 text-sm text-left transition-all ${
                       isRemoved
-                        ? "border-red-500/20 bg-red-500/5 opacity-50"
+                        ? "border-red/20 bg-red/5 opacity-50"
                         : "border-cream-8 bg-cream-3 hover:border-cream-15"
                     }`}
                   >
                     <div
                       className={`size-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
                         isRemoved
-                          ? "border-red-500/40 bg-red-500/20"
+                          ? "border-red/40 bg-red/20"
                           : "border-cream-15 bg-transparent"
                       }`}
                     >
-                      {isRemoved && <X className="size-3 text-red-400" />}
+                      {isRemoved && <X className="size-3 text-red" />}
                     </div>
                     <span className={`flex-1 ${isRemoved ? "line-through text-cream-30" : "text-cream-60"}`}>
                       {link.sideA.city || link.sideA.locationCode}
@@ -487,7 +487,7 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
 
       {/* Error */}
       {simError && (
-        <div className="rounded-lg bg-red-500/5 border border-red-500/20 px-3 py-2 text-xs text-red-400">
+        <div className="rounded-lg bg-red-500/5 border border-red-500/20 px-3 py-2 text-xs text-red">
           {simError}
         </div>
       )}
@@ -525,7 +525,7 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
                   {results.deltaPct > 0.001 ? (
                     <ArrowUpRight className="size-5 text-green" />
                   ) : results.deltaPct < -0.001 ? (
-                    <ArrowDownRight className="size-5 text-red-400" />
+                    <ArrowDownRight className="size-5 text-red" />
                   ) : (
                     <Minus className="size-5 text-cream-30" />
                   )}
@@ -534,7 +534,7 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
                       results.deltaPct > 0.001
                         ? "text-green"
                         : results.deltaPct < -0.001
-                        ? "text-red-400"
+                        ? "text-red"
                         : "text-cream-30"
                     }`}
                   >
@@ -631,7 +631,7 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
                             dPct > 0.001
                               ? "text-green"
                               : dPct < -0.001
-                              ? "text-red-400"
+                              ? "text-red"
                               : "text-cream-20"
                           }`}
                         >

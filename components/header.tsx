@@ -20,7 +20,7 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-cream-8 bg-dark/80 backdrop-blur-sm px-4 sm:px-6 py-3">
+    <header className="sticky top-0 z-50 border-b border-cream-8 bg-dark px-4 sm:px-6 py-3">
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         <div className="flex items-center gap-3">
           <h1 className="font-display text-xl tracking-wide text-cream">
@@ -60,8 +60,9 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
             Live
           </span>
           <button
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
             onClick={() => setMenuOpen(!menuOpen)}
-            className="text-cream-40 hover:text-cream transition-colors p-1"
+            className="text-cream-40 hover:text-cream focus-visible:ring-2 focus-visible:ring-cream-20 rounded-md transition-colors p-1"
           >
             {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>

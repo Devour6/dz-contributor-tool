@@ -4,6 +4,7 @@
 @theme inline {
   --color-cream: #F3EED9;
   --color-dark: #0F0E0C;
+  --color-cream-3: rgba(243, 238, 217, 0.03);
   --color-cream-5: rgba(243, 238, 217, 0.05);
   --color-cream-8: rgba(243, 238, 217, 0.08);
   --color-cream-10: rgba(243, 238, 217, 0.10);
@@ -11,6 +12,7 @@
   --color-cream-20: rgba(243, 238, 217, 0.20);
   --color-cream-30: rgba(243, 238, 217, 0.30);
   --color-cream-40: rgba(243, 238, 217, 0.40);
+  --color-cream-50: rgba(243, 238, 217, 0.50);
   --color-cream-60: rgba(243, 238, 217, 0.60);
   --color-cream-80: rgba(243, 238, 217, 0.80);
 

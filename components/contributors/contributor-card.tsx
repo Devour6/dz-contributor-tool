@@ -28,7 +28,7 @@ export function ContributorCard({ contributor, feeHistory, onSelect }: Contribut
       className="bg-cream-5 border-cream-8 cursor-pointer hover:border-cream-15 transition-colors"
       onClick={() => onSelect(contributor)}
     >
-      <CardContent className="pt-5 pb-4">
+      <CardContent className="pt-4 pb-4">
         {/* Header: colored dot + name + status */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2.5">

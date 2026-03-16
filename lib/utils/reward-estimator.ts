@@ -1,4 +1,4 @@
-import { CONTRIBUTOR_SHARE, VALIDATOR_SHARE, LAMPORTS_PER_SOL } from "@/lib/constants/config";
+import { CONTRIBUTOR_SHARE, VALIDATOR_SHARE, LAMPORTS_PER_SOL, EPOCHS_PER_MONTH, EPOCHS_PER_YEAR } from "@/lib/constants/config";
 import type { FeeHistory } from "@/lib/types/fees";
 import type {
   PublisherCheckResponse,
@@ -31,14 +31,10 @@ export function projectEarnings(
   const avgFee = feeHistory.averageFeeSol;
   const perEpoch = estimateEpochReward(contributorShare, avgFee);
 
-  // Estimate epochs per month: ~12 (avg 2.5 day epochs)
-  const epochsPerMonth = 12;
-  const epochsPerYear = epochsPerMonth * 12;
-
   return {
     perEpochSol: perEpoch,
-    monthlySol: perEpoch * epochsPerMonth,
-    yearlySol: perEpoch * epochsPerYear,
+    monthlySol: perEpoch * EPOCHS_PER_MONTH,
+    yearlySol: perEpoch * EPOCHS_PER_YEAR,
   };
 }
 
@@ -84,8 +80,6 @@ export function computeValidatorRewards(
   averageFeePerEpochSol: number
 ): ValidatorRewardsSummary {
   const validatorPoolPerEpoch = averageFeePerEpochSol * VALIDATOR_SHARE;
-  const epochsPerMonth = 12;
-  const epochsPerYear = 144;
 
   const publishingValidators = publisherData.publishers.filter(
     (p) => p.publishing_leader_shreds === true
@@ -121,8 +115,8 @@ export function computeValidatorRewards(
         isBackup: p.is_backup,
         multicastConnected: p.multicast_connected,
         projectedRewardPerEpochSol: perEpoch,
-        projectedRewardMonthlySol: perEpoch * epochsPerMonth,
-        projectedRewardYearlySol: perEpoch * epochsPerYear,
+        projectedRewardMonthlySol: perEpoch * EPOCHS_PER_MONTH,
+        projectedRewardYearlySol: perEpoch * EPOCHS_PER_YEAR,
       };
     }
   );

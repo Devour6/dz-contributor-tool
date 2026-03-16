@@ -36,7 +36,7 @@ function StatusBadge({ publishing, backup }: { publishing: boolean; backup: bool
   }
   if (backup) {
     return (
-      <Badge className="bg-blue-400/10 text-blue-400 border-blue-400/20 text-xs">
+      <Badge className="bg-amber/10 text-amber border-amber/20 text-xs">
         Backup
       </Badge>
     );
@@ -92,7 +92,7 @@ export function ValidatorRewards({ rewards, isLoading }: ValidatorRewardsProps) 
   return (
     <div className="space-y-6">
       {/* Warning banner */}
-      <div className="flex items-start gap-2 rounded-lg bg-amber-500/5 border border-amber-500/20 px-3 py-2 text-xs text-amber-400">
+      <div className="flex items-start gap-2 rounded-lg bg-amber/5 border border-amber/20 px-3 py-2 text-xs text-amber">
         <AlertTriangle className="size-3.5 shrink-0 mt-0.5" />
         <span>
           Projected rewards use historical fee averages (epochs {FEE_EPOCH_START}–{FEE_EPOCH_END}) and the

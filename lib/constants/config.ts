@@ -20,6 +20,8 @@ export const BURN_RATE = 0.10; // 10% of revenue burned
 export const CONTRIBUTOR_SHARE = 0.45; // 45% distributed to contributors (Shapley)
 export const VALIDATOR_SHARE = 0.45; // 45% distributed to validators (stake-weighted)
 export const LAMPORTS_PER_SOL = 1_000_000_000;
+export const EPOCHS_PER_MONTH = 12; // ~2.5 days per epoch ≈ 12 epochs/month
+export const EPOCHS_PER_YEAR = 144;
 
 // Shapley parameters (for reference — full computation done off-chain)
 export const SHAPLEY_PARAMS = {

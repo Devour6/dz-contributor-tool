@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSnapshotUrl } from "@/lib/constants/config";
+import { getSnapshotUrl, MIN_DZ_EPOCH, MAX_DZ_EPOCH } from "@/lib/constants/config";
 import type { RawSnapshot } from "@/lib/types/snapshot";
 import type { ShapleyInput, ShapleyOutput } from "@/lib/types/shapley";
 import { parseSnapshot } from "@/lib/utils/snapshot-parser";
@@ -7,7 +7,10 @@ import { buildShapleyInput } from "@/lib/utils/shapley-input-builder";
 import { computeShapley } from "@/lib/utils/shapley-solver";
 import { modifyShapleyInput } from "@/lib/utils/shapley-input-modifier";
 
-// Cache baseline computation per epoch
+// Cache baseline computation per epoch — bounded to MAX_CACHE_SIZE entries
+const MAX_CACHE_SIZE = 10;
+const CACHE_TTL = 30 * 60 * 1000;
+
 const baselineCache = new Map<
   number,
   {
@@ -17,20 +20,62 @@ const baselineCache = new Map<
     timestamp: number;
   }
 >();
-const CACHE_TTL = 30 * 60 * 1000;
+
+function evictStaleCache() {
+  const now = Date.now();
+  for (const [key, entry] of baselineCache) {
+    if (now - entry.timestamp > CACHE_TTL) {
+      baselineCache.delete(key);
+    }
+  }
+  // If still over limit, evict oldest
+  if (baselineCache.size > MAX_CACHE_SIZE) {
+    const oldest = [...baselineCache.entries()].sort(
+      (a, b) => a[1].timestamp - b[1].timestamp
+    );
+    while (baselineCache.size > MAX_CACHE_SIZE && oldest.length > 0) {
+      baselineCache.delete(oldest.shift()![0]);
+    }
+  }
+}
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const { epoch, contributorCode, removeLinks, addLinks } = body;
-
-  if (!epoch || !contributorCode) {
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
     return NextResponse.json(
-      { error: "epoch and contributorCode required" },
+      { error: "Invalid JSON body" },
       { status: 400 }
     );
   }
 
+  const { epoch, contributorCode, removeLinks, addLinks } = body;
+
+  if (
+    typeof epoch !== "number" ||
+    typeof contributorCode !== "string" ||
+    !contributorCode
+  ) {
+    return NextResponse.json(
+      { error: "epoch (number) and contributorCode (string) required" },
+      { status: 400 }
+    );
+  }
+
+  if (epoch < MIN_DZ_EPOCH || epoch > MAX_DZ_EPOCH + 50) {
+    return NextResponse.json(
+      { error: `Epoch ${epoch} out of valid range (${MIN_DZ_EPOCH}-${MAX_DZ_EPOCH})` },
+      { status: 400 }
+    );
+  }
+
+  const safeRemoveLinks = Array.isArray(removeLinks) ? removeLinks : [];
+  const safeAddLinks = Array.isArray(addLinks) ? addLinks : [];
+
   try {
+    evictStaleCache();
+
     // Get or build baseline
     let cached = baselineCache.get(epoch);
     if (!cached || Date.now() - cached.timestamp > CACHE_TTL) {
@@ -62,8 +107,8 @@ export async function POST(request: NextRequest) {
       parsed,
       raw,
       contributorCode,
-      removeLinks || [],
-      addLinks || []
+      safeRemoveLinks,
+      safeAddLinks
     );
 
     // Compute modified Shapley
@@ -89,8 +134,9 @@ export async function POST(request: NextRequest) {
       ),
     });
   } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { error: `Simulation failed: ${err}` },
+      { error: `Simulation failed: ${message}` },
       { status: 500 }
     );
   }

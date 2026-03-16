@@ -27,8 +27,8 @@ export function modifyShapleyInput(
   const input: ShapleyInput = {
     devices: baselineInput.devices.map((d) => ({ ...d })),
     private_links: baselineInput.private_links.map((l) => ({ ...l })),
-    public_links: baselineInput.public_links,
-    demands: baselineInput.demands,
+    public_links: baselineInput.public_links.map((l) => ({ ...l })),
+    demands: baselineInput.demands.map((d) => ({ ...d })),
     operator_uptime: baselineInput.operator_uptime,
     contiguity_bonus: baselineInput.contiguity_bonus,
     demand_multiplier: baselineInput.demand_multiplier,
@@ -52,11 +52,19 @@ export function modifyShapleyInput(
       const metro2 = locToMetro.get(link.sideZ.locationCode);
       if (!metro1 || !metro2) continue;
 
-      // Remove first matching private_link for this metro pair
+      // Remove first matching private_link for this metro pair owned by this contributor
+      // (both endpoints must have a device belonging to this contributor)
+      const contributorMetros = new Set(
+        input.devices
+          .filter((d) => d.operator === contributorCode)
+          .map((d) => d.device)
+      );
       const idx = input.private_links.findIndex(
         (pl) =>
-          (pl.device1 === metro1 && pl.device2 === metro2) ||
-          (pl.device1 === metro2 && pl.device2 === metro1)
+          ((pl.device1 === metro1 && pl.device2 === metro2) ||
+           (pl.device1 === metro2 && pl.device2 === metro1)) &&
+          contributorMetros.has(pl.device1) &&
+          contributorMetros.has(pl.device2)
       );
       if (idx !== -1) input.private_links.splice(idx, 1);
     }

@@ -16,11 +16,11 @@ import { useEpochs } from "@/lib/hooks/use-epochs";
 import { usePublishers } from "@/lib/hooks/use-publishers";
 import { useShapleyValues } from "@/lib/hooks/use-shapley";
 import { computeValidatorRewards } from "@/lib/utils/reward-estimator";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle } from "lucide-react";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("network");
-  const { data: epochsData, isLoading: epochsLoading } = useEpochs();
+  const { data: epochsData, isLoading: epochsLoading, error: epochsError } = useEpochs();
   const [selectedEpoch, setSelectedEpoch] = useState<number | null>(null);
 
   useEffect(() => {
@@ -29,10 +29,10 @@ export default function Home() {
     }
   }, [epochsData, selectedEpoch]);
 
-  const { data: snapshot, isLoading: snapshotLoading } =
+  const { data: snapshot, isLoading: snapshotLoading, error: snapshotError } =
     useSnapshot(selectedEpoch);
-  const { data: feeHistory, isLoading: feesLoading } = useFees();
-  const { data: publisherData, isLoading: publishersLoading } = usePublishers();
+  const { data: feeHistory, isLoading: feesLoading, error: feesError } = useFees();
+  const { data: publisherData, isLoading: publishersLoading, error: publishersError } = usePublishers();
 
   const { data: shapleyData, isLoading: shapleyLoading } =
     useShapleyValues(selectedEpoch);
@@ -59,6 +59,7 @@ export default function Home() {
   }, [snapshot, shapleyData]);
 
   const isLoading = epochsLoading || snapshotLoading;
+  const apiError = epochsError || snapshotError || feesError || publishersError;
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -68,6 +69,18 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-dark">
       <Header activeTab={activeTab} onTabChange={handleTabChange} />
+
+      {apiError && (
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-4">
+          <div className="flex items-start gap-2 rounded-lg bg-red/5 border border-red/20 px-3 py-2 text-xs text-red">
+            <AlertTriangle className="size-3.5 shrink-0 mt-0.5" />
+            <span>
+              Failed to load some data. Some sections may be incomplete.{" "}
+              {apiError.message && <span className="text-cream-30">({apiError.message})</span>}
+            </span>
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex items-center justify-center py-32">

@@ -422,20 +422,23 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
             {/* Zoom controls */}
             <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex flex-col gap-1">
               <button
+                aria-label="Zoom in"
                 onClick={handleZoomIn}
-                className="rounded-md bg-dark/80 border border-cream-8 p-2 sm:p-1.5 text-cream-40 hover:text-cream hover:border-cream-15 transition-colors"
+                className="rounded-md bg-dark/80 border border-cream-8 p-2 sm:p-1.5 text-cream-40 hover:text-cream hover:border-cream-15 focus-visible:ring-2 focus-visible:ring-cream-20 transition-colors"
               >
                 <ZoomIn className="size-4" />
               </button>
               <button
+                aria-label="Zoom out"
                 onClick={handleZoomOut}
-                className="rounded-md bg-dark/80 border border-cream-8 p-2 sm:p-1.5 text-cream-40 hover:text-cream hover:border-cream-15 transition-colors"
+                className="rounded-md bg-dark/80 border border-cream-8 p-2 sm:p-1.5 text-cream-40 hover:text-cream hover:border-cream-15 focus-visible:ring-2 focus-visible:ring-cream-20 transition-colors"
               >
                 <ZoomOut className="size-4" />
               </button>
               <button
+                aria-label="Reset map view"
                 onClick={handleReset}
-                className="rounded-md bg-dark/80 border border-cream-8 p-2 sm:p-1.5 text-cream-40 hover:text-cream hover:border-cream-15 transition-colors"
+                className="rounded-md bg-dark/80 border border-cream-8 p-2 sm:p-1.5 text-cream-40 hover:text-cream hover:border-cream-15 focus-visible:ring-2 focus-visible:ring-cream-20 transition-colors"
               >
                 <Maximize2 className="size-4" />
               </button>
@@ -444,8 +447,9 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
             {/* Active filter clear button */}
             {hasActiveFilter && (
               <button
+                aria-label="Clear map filter"
                 onClick={clearFilters}
-                className="absolute top-3 left-3 z-50 flex items-center gap-1.5 rounded-full bg-dark/80 border border-cream-8 px-3 py-1.5 text-xs text-cream-60 hover:text-cream hover:border-cream-15 transition-colors"
+                className="absolute top-3 left-3 z-50 flex items-center gap-1.5 rounded-full bg-dark/80 border border-cream-8 px-3 py-1.5 text-xs text-cream-60 hover:text-cream hover:border-cream-15 focus-visible:ring-2 focus-visible:ring-cream-20 transition-colors"
               >
                 <X className="size-3" />
                 Clear filter
@@ -457,7 +461,7 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
         {/* Detail panel — shows when contributor or city is selected */}
         {(selectedContributorData || selectedCity) && (
           <div className="absolute left-2 sm:left-3 z-40 max-w-[200px] sm:max-w-[260px]" style={{ top: hasActiveFilter ? 48 : 12 }}>
-            <div className="rounded-xl bg-dark/95 border border-cream-10 p-3 sm:p-4 shadow-xl backdrop-blur-sm max-h-[280px] sm:max-h-[320px] overflow-y-auto">
+            <div className="rounded-xl bg-dark border border-cream-10 p-3 sm:p-4 shadow-xl max-h-[280px] sm:max-h-[320px] overflow-y-auto">
               {selectedContributorData && (
                 <>
                   <div className="flex items-center gap-2 mb-3">
