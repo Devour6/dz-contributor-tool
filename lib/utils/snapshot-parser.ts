@@ -145,9 +145,17 @@ export function parseSnapshot(raw: RawSnapshot): ParsedSnapshot {
   const usersPerLocation = new Map<string, Set<string>>();
   const userSlots = new Map<string, number>();
 
-  for (const [, user] of Object.entries(svc.users)) {
+  for (const [userPk, user] of Object.entries(svc.users)) {
     const device = deviceMap.get(user.device_pk);
-    if (device && user.validator_pubkey && user.validator_pubkey !== "11111111111111111111111111111111") {
+    if (!device) {
+      console.warn(`[snapshot-parser] User ${userPk}: device ${user.device_pk} not found, skipping`);
+      continue;
+    }
+    if (!user.validator_pubkey) {
+      console.warn(`[snapshot-parser] User ${userPk}: missing validator_pubkey, skipping`);
+      continue;
+    }
+    if (user.validator_pubkey !== "11111111111111111111111111111111") {
       const locUsers = usersPerLocation.get(device.locationCode) || new Set();
       locUsers.add(user.validator_pubkey);
       usersPerLocation.set(device.locationCode, locUsers);

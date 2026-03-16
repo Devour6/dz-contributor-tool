@@ -25,7 +25,7 @@ export function ContributorCard({ contributor, feeHistory, onSelect }: Contribut
 
   return (
     <Card
-      className="bg-cream-5 border-cream-8 cursor-pointer hover:border-cream-15 transition-colors"
+      className="bg-cream-5 border-cream-8 cursor-pointer hover:border-cream-15 transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
       onClick={() => onSelect(contributor)}
     >
       <CardContent className="pt-4 pb-4">
@@ -84,7 +84,7 @@ export function ContributorCard({ contributor, feeHistory, onSelect }: Contribut
         </div>
 
         {/* City pills */}
-        <div className="mt-3 flex flex-wrap gap-1">
+        <div className="mt-3 flex flex-wrap gap-1.5 sm:gap-2">
           {contributor.cities.slice(0, 5).map((city) => (
             <span
               key={city}

@@ -38,7 +38,7 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
             <button
               key={item.value}
               onClick={() => onTabChange(item.value)}
-              className={`text-sm transition-colors ${
+              className={`text-sm transition-colors rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
                 activeTab === item.value
                   ? "text-cream"
                   : "text-cream-40 hover:text-cream"
@@ -79,7 +79,7 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
                 onTabChange(item.value);
                 setMenuOpen(false);
               }}
-              className={`text-sm transition-colors py-2 text-left ${
+              className={`text-sm transition-colors py-2 text-left rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
                 activeTab === item.value
                   ? "text-cream"
                   : "text-cream-40 hover:text-cream"

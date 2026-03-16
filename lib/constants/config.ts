@@ -61,21 +61,22 @@ export function getContributorDisplayName(code: string): string {
 }
 
 // Contributor code → color for map and cards
+// Warm-tone palette aligned with Phase brand (no blue, no purple)
 export const CONTRIBUTOR_COLORS: Record<string, string> = {
-  jump_: "#FF6B6B",
-  dgt: "#4ECDC4",
-  tsw: "#45B7D1",
-  glxy: "#96CEB4",
-  stakefac: "#FFEAA7",
-  cherry: "#DDA0DD",
-  rox: "#98D8C8",
-  s3v: "#F7DC6F",
-  laconic: "#BB8FCE",
-  infiber: "#85C1E9",
-  cdrw: "#F0B27A",
-  latitude: "#82E0AA",
-  velia: "#F1948A",
-  allnodes: "#AED6F1",
+  jump_: "#FF6B6B",   // coral red
+  dgt: "#4ECDC4",     // teal
+  tsw: "#F0B27A",     // sandy orange
+  glxy: "#96CEB4",    // sage green
+  stakefac: "#FFEAA7", // butter yellow
+  cherry: "#E8A0BF",  // dusty rose
+  rox: "#98D8C8",     // mint
+  s3v: "#F7DC6F",     // gold
+  laconic: "#D4A574",  // warm tan
+  infiber: "#82E0AA",  // emerald
+  cdrw: "#F1948A",    // salmon
+  latitude: "#A3D9A5", // spring green
+  velia: "#EDCC8B",   // warm sand
+  allnodes: "#C9B99A", // khaki
 };
 
 export function getContributorColor(code: string): string {

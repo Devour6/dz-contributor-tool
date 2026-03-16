@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import {
   ComposableMap,
   ZoomableGroup,
@@ -58,6 +58,7 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
   const [center, setCenter] = useState<[number, number]>(DEFAULT_CENTER);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
 
   // Build unique cities — aggregate all data centers in the same city into one marker
   const cities = useMemo(() => {
@@ -224,13 +225,29 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
   };
 
   const hasActiveFilter = selectedContributor || selectedCity;
+  const hasCities = Object.keys(cities).length > 0;
+
+  if (!hasCities) {
+    return (
+      <Card className="bg-cream-5 border-cream-8">
+        <CardContent className="py-12 text-center">
+          <p className="text-sm text-cream-40">
+            No contributor links available for this epoch.
+          </p>
+          <p className="text-xs text-cream-20 mt-1">
+            Try selecting a more recent epoch from the selector above.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-4">
       <div className="relative">
         {/* Map */}
         <Card className="bg-cream-5 border-cream-8 overflow-hidden">
-          <CardContent className="p-0 relative">
+          <CardContent ref={mapContainerRef} className="p-0 relative">
             <ComposableMap
               projection="geoMercator"
               projectionConfig={{
@@ -379,16 +396,20 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
               </ZoomableGroup>
             </ComposableMap>
 
-            {/* Tooltip */}
-            {tooltip && (
-              <div
-                className="absolute z-50 pointer-events-none"
-                style={{
-                  left: tooltip.x + 12,
-                  top: tooltip.y - 10,
-                }}
-              >
-                <div className="rounded-lg bg-dark border border-cream-15 px-3 py-2 shadow-lg min-w-[160px]">
+            {/* Tooltip — boundary-aware positioning */}
+            {tooltip && (() => {
+              const containerW = mapContainerRef.current?.clientWidth ?? 800;
+              const tooltipW = 180;
+              const flipX = tooltip.x + tooltipW + 12 > containerW;
+              return (
+                <div
+                  className="absolute z-50 pointer-events-none"
+                  style={{
+                    left: flipX ? Math.max(4, tooltip.x - tooltipW - 4) : tooltip.x + 12,
+                    top: Math.max(4, tooltip.y - 10),
+                  }}
+                >
+                  <div className="rounded-lg bg-dark border border-cream-15 px-3 py-2 shadow-lg min-w-[160px] max-w-[200px]">
                   <p className="text-sm font-medium text-cream">{tooltip.city.name}</p>
                   <p className="text-xs text-cream-40">{tooltip.city.country}</p>
                   <div className="mt-1.5 flex items-center gap-3 text-xs text-cream-60">
@@ -417,7 +438,8 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                   <p className="mt-1.5 text-[10px] text-cream-20">Click to focus</p>
                 </div>
               </div>
-            )}
+              );
+            })()}
 
             {/* Zoom controls */}
             <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex flex-col gap-1">
@@ -574,7 +596,7 @@ export function NetworkMap({ snapshot }: NetworkMapProps) {
                   }
                 }
               }}
-              className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs transition-all border ${
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs transition-all border focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
                 selectedContributor === c.code
                   ? "border-cream-30 bg-cream-10"
                   : "border-cream-8 hover:border-cream-15"

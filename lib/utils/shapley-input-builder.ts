@@ -63,7 +63,10 @@ function aggregateByMetro(
   const map = new Map<string, MetroAggregate>();
   for (const cd of cityDemands) {
     const metro = locToMetro.get(cd.locationCode);
-    if (!metro) continue;
+    if (!metro) {
+      console.warn(`[shapley-input] aggregateByMetro: no metro mapping for location ${cd.locationCode} (${cd.locationName}), skipping`);
+      continue;
+    }
     const existing = map.get(metro) || {
       metro,
       validatorCount: 0,
@@ -91,7 +94,10 @@ function buildDevices(
   for (const contrib of parsed.contributors) {
     for (const device of contrib.devices) {
       const metro = locToMetro.get(device.locationCode);
-      if (!metro) continue;
+      if (!metro) {
+        console.warn(`[shapley-input] buildDevices: no metro mapping for device location ${device.locationCode} (contributor: ${contrib.code}), skipping`);
+        continue;
+      }
 
       const key = `${metro}:${contrib.code}`;
       if (seen.has(key)) continue;
@@ -116,7 +122,10 @@ function buildPrivateLinks(
     for (const link of contrib.links) {
       const metro1 = locToMetro.get(link.sideA.locationCode);
       const metro2 = locToMetro.get(link.sideZ.locationCode);
-      if (!metro1 || !metro2) continue;
+      if (!metro1 || !metro2) {
+        console.warn(`[shapley-input] buildPrivateLinks: metro lookup failed for link ${link.pubkey} (${link.sideA.locationCode}→${link.sideZ.locationCode}, contributor: ${contrib.code}), skipping`);
+        continue;
+      }
       links.push({
         device1: metro1,
         device2: metro2,
@@ -146,7 +155,11 @@ function buildPublicLinks(raw: RawSnapshot): ShapleyPublicLink[] {
   for (const sample of samples) {
     const metro1 = exchangeToMetro.get(sample.origin_exchange_pk);
     const metro2 = exchangeToMetro.get(sample.target_exchange_pk);
-    if (!metro1 || !metro2 || metro1 === metro2) continue;
+    if (!metro1 || !metro2) {
+      console.warn(`[shapley-input] buildPublicLinks: exchange lookup failed for latency sample (origin: ${sample.origin_exchange_pk}, target: ${sample.target_exchange_pk}), skipping`);
+      continue;
+    }
+    if (metro1 === metro2) continue;
 
     const key = [metro1, metro2].sort().join("-");
     const latencies = linkMap.get(key) || [];
@@ -234,7 +247,7 @@ export function buildShapleyInput(
 
   // Build users-per-location map
   const usersPerLocation = new Map<string, Set<string>>();
-  for (const user of Object.values(svc.users)) {
+  for (const [userPk, user] of Object.entries(svc.users)) {
     if (
       !user.validator_pubkey ||
       user.validator_pubkey === "11111111111111111111111111111111"
@@ -242,12 +255,18 @@ export function buildShapleyInput(
       continue;
 
     const device = svc.devices[user.device_pk];
-    if (!device) continue;
+    if (!device) {
+      console.warn(`[shapley-input] buildShapleyInput: user ${userPk} references missing device ${user.device_pk}, skipping`);
+      continue;
+    }
 
     const loc = Object.entries(svc.locations).find(
       ([pk]) => pk === device.location_pk
     );
-    if (!loc) continue;
+    if (!loc) {
+      console.warn(`[shapley-input] buildShapleyInput: device ${user.device_pk} references missing location ${device.location_pk}, skipping`);
+      continue;
+    }
 
     const locCode = loc[1].code;
     const locUsers = usersPerLocation.get(locCode) || new Set();

@@ -35,13 +35,13 @@ function DialogContent({
       <DialogOverlay />
       <RadixDialog.Content
         className={cn(
-          "fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-cream-10 bg-[#0F0E0C] shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:max-w-2xl",
+          "fixed left-1/2 top-1/2 z-50 w-[calc(100vw-2rem)] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-cream-10 bg-background shadow-2xl duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:max-w-2xl",
           className
         )}
         {...props}
       >
         {children}
-        <RadixDialog.Close className="absolute right-3 top-3 sm:right-4 sm:top-4 rounded-md p-1.5 sm:p-1 text-cream-30 hover:text-cream transition-colors focus:outline-none">
+        <RadixDialog.Close className="absolute right-3 top-3 sm:right-4 sm:top-4 rounded-md p-1.5 sm:p-1 text-cream-30 hover:text-cream transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
           <X className="size-5 sm:size-4" />
           <span className="sr-only">Close</span>
         </RadixDialog.Close>

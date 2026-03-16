@@ -105,8 +105,8 @@ export default function Home() {
 
           {/* Tabs — each section gets full viewport */}
           <Tabs value={activeTab} onValueChange={handleTabChange} className="mt-4 sm:mt-6">
-            {/* Mobile tab strip */}
-            <TabsList variant="line" className="sm:hidden w-full overflow-x-auto mb-4">
+            {/* Tab strip — visible on all breakpoints */}
+            <TabsList variant="line" className="w-full overflow-x-auto mb-4">
               <TabsTrigger value="network">Network</TabsTrigger>
               <TabsTrigger value="contributors">Contributors</TabsTrigger>
               <TabsTrigger value="simulate">Simulate</TabsTrigger>

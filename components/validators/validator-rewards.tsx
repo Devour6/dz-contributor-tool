@@ -19,7 +19,10 @@ import {
   shortenPubkey,
 } from "@/lib/utils/format";
 import { LAMPORTS_PER_SOL, FEE_EPOCH_START, FEE_EPOCH_END } from "@/lib/constants/config";
-import { Search, AlertTriangle, Loader2 } from "lucide-react";
+import { Search, AlertTriangle, Loader2, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+
+type SortKey = "name" | "stake" | "share" | "slots" | "rewardEpoch" | "rewardMonth";
+type SortDir = "asc" | "desc";
 
 interface ValidatorRewardsProps {
   rewards: ValidatorRewardsSummary | null;
@@ -50,19 +53,57 @@ function StatusBadge({ publishing, backup }: { publishing: boolean; backup: bool
 
 export function ValidatorRewards({ rewards, isLoading }: ValidatorRewardsProps) {
   const [search, setSearch] = useState("");
+  const [sortKey, setSortKey] = useState<SortKey>("stake");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("desc");
+    }
+  };
 
   const filtered = useMemo(() => {
     if (!rewards) return [];
-    if (!search.trim()) return rewards.validators;
-    const q = search.toLowerCase();
-    return rewards.validators.filter(
-      (v) =>
-        v.validatorName.toLowerCase().includes(q) ||
-        v.nodePubkey.toLowerCase().includes(q) ||
-        v.votePubkey.toLowerCase().includes(q) ||
-        v.dzMetroCode.toLowerCase().includes(q)
-    );
-  }, [rewards, search]);
+    let list = rewards.validators;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (v) =>
+          v.validatorName.toLowerCase().includes(q) ||
+          v.nodePubkey.toLowerCase().includes(q) ||
+          v.votePubkey.toLowerCase().includes(q) ||
+          v.dzMetroCode.toLowerCase().includes(q)
+      );
+    }
+    const sorted = [...list].sort((a, b) => {
+      let cmp = 0;
+      switch (sortKey) {
+        case "name":
+          cmp = (a.validatorName || "").localeCompare(b.validatorName || "");
+          break;
+        case "stake":
+          cmp = a.activatedStake - b.activatedStake;
+          break;
+        case "share":
+          cmp = a.stakeSharePercent - b.stakeSharePercent;
+          break;
+        case "slots":
+          cmp = a.leaderSlots - b.leaderSlots;
+          break;
+        case "rewardEpoch":
+          cmp = a.projectedRewardPerEpochSol - b.projectedRewardPerEpochSol;
+          break;
+        case "rewardMonth":
+          cmp = a.projectedRewardMonthlySol - b.projectedRewardMonthlySol;
+          break;
+      }
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+    return sorted;
+  }, [rewards, search, sortKey, sortDir]);
 
   if (isLoading) {
     return (
@@ -151,15 +192,15 @@ export function ValidatorRewards({ rewards, isLoading }: ValidatorRewardsProps) 
               <Table>
                 <TableHeader>
                   <TableRow className="border-cream-8 hover:bg-transparent">
-                    <TableHead className="text-cream-40">Validator</TableHead>
+                    <SortableHead label="Validator" sortKey="name" currentKey={sortKey} currentDir={sortDir} onSort={handleSort} />
                     <TableHead className="text-cream-40">Metro</TableHead>
-                    <TableHead className="text-cream-40 text-right">Stake (SOL)</TableHead>
-                    <TableHead className="text-cream-40 text-right">Share</TableHead>
-                    <TableHead className="text-cream-40 text-right">Leader Slots</TableHead>
+                    <SortableHead label="Stake (SOL)" sortKey="stake" currentKey={sortKey} currentDir={sortDir} onSort={handleSort} align="right" />
+                    <SortableHead label="Share" sortKey="share" currentKey={sortKey} currentDir={sortDir} onSort={handleSort} align="right" />
+                    <SortableHead label="Leader Slots" sortKey="slots" currentKey={sortKey} currentDir={sortDir} onSort={handleSort} align="right" />
                     <TableHead className="text-cream-40">Client</TableHead>
                     <TableHead className="text-cream-40">Status</TableHead>
-                    <TableHead className="text-cream-40 text-right">Est. / Epoch</TableHead>
-                    <TableHead className="text-cream-40 text-right">Est. / Month</TableHead>
+                    <SortableHead label="Est. / Epoch" sortKey="rewardEpoch" currentKey={sortKey} currentDir={sortDir} onSort={handleSort} align="right" />
+                    <SortableHead label="Est. / Month" sortKey="rewardMonth" currentKey={sortKey} currentDir={sortDir} onSort={handleSort} align="right" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -288,5 +329,44 @@ function MetricCard({
         {note && <p className="text-xs text-cream-20 mt-1">{note}</p>}
       </CardContent>
     </Card>
+  );
+}
+
+function SortableHead({
+  label,
+  sortKey: key,
+  currentKey,
+  currentDir,
+  onSort,
+  align,
+}: {
+  label: string;
+  sortKey: SortKey;
+  currentKey: SortKey;
+  currentDir: SortDir;
+  onSort: (key: SortKey) => void;
+  align?: "left" | "right";
+}) {
+  const active = currentKey === key;
+  return (
+    <TableHead className={align === "right" ? "text-right" : ""}>
+      <button
+        onClick={() => onSort(key)}
+        className={`inline-flex items-center gap-1 text-cream-40 hover:text-cream transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none rounded-sm ${
+          align === "right" ? "ml-auto" : ""
+        }`}
+      >
+        {label}
+        {active ? (
+          currentDir === "asc" ? (
+            <ArrowUp className="size-3" />
+          ) : (
+            <ArrowDown className="size-3" />
+          )
+        ) : (
+          <ArrowUpDown className="size-3 opacity-40" />
+        )}
+      </button>
+    </TableHead>
   );
 }

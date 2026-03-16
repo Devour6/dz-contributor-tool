@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(result);
   } catch (err) {
     return NextResponse.json(
-      { error: `Shapley computation failed: ${err}` },
+      { error: `Shapley computation failed: ${err instanceof Error ? err.message : String(err)}` },
       { status: 500 }
     );
   }

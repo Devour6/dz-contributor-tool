@@ -311,7 +311,7 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
                   <button
                     key={link.pubkey}
                     onClick={() => toggleLink(link.pubkey)}
-                    className={`w-full flex items-center gap-3 rounded-lg border px-3 py-2.5 text-sm text-left transition-all ${
+                    className={`w-full flex items-center gap-3 rounded-lg border px-3 py-2.5 text-sm text-left transition-all focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none ${
                       isRemoved
                         ? "border-red/20 bg-red/5 opacity-50"
                         : "border-cream-8 bg-cream-3 hover:border-cream-15"
@@ -373,7 +373,7 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
                         ]);
                         setSimResult(null);
                       }}
-                      className="flex items-center gap-1.5 rounded-full border border-cream-8 hover:border-cream-20 px-2.5 py-1 text-xs text-cream-60 transition-colors"
+                      className="flex items-center gap-1.5 rounded-full border border-cream-8 hover:border-cream-20 px-2.5 py-1 text-xs text-cream-60 transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
                       <Zap className="size-3 text-amber" />
                       {gap.cityA.locationName}
@@ -431,7 +431,7 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
               <button
                 onClick={addLink}
                 disabled={!newCityA || !newCityZ || newCityA === newCityZ}
-                className="rounded-lg bg-cream-8 border border-cream-15 px-4 py-2 text-sm text-cream-60 hover:text-cream hover:bg-cream-10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0"
+                className="rounded-lg bg-cream-8 border border-cream-15 px-4 py-2 text-sm text-cream-60 hover:text-cream hover:bg-cream-10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed shrink-0 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
               >
                 <Plus className="size-4 inline mr-1" />
                 Add
@@ -455,7 +455,8 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
                     <span className="text-cream-60">{getCityName(link.cityZ)}</span>
                     <button
                       onClick={() => removeAddedLink(i)}
-                      className="ml-auto text-cream-30 hover:text-cream transition-colors"
+                      aria-label="Remove link"
+                      className="ml-auto text-cream-30 hover:text-cream transition-colors rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                     >
                       <X className="size-3.5" />
                     </button>
@@ -472,7 +473,7 @@ export function SimulateTab({ snapshot, feeHistory, selectedEpoch }: SimulateTab
         <button
           onClick={handleSimulate}
           disabled={!hasChanges || simLoading}
-          className="w-full rounded-lg bg-cream text-dark font-display text-sm tracking-wide py-3 transition-all hover:bg-cream-80 disabled:opacity-30 disabled:cursor-not-allowed"
+          className="w-full rounded-lg bg-cream text-dark font-display text-sm tracking-wide py-3 transition-all hover:bg-cream-80 disabled:opacity-30 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
         >
           {simLoading ? (
             <span className="flex items-center justify-center gap-2">
