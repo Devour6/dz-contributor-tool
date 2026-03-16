@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatSolFromSol } from "@/lib/utils/format";
 import { computeFeeTrend } from "@/lib/utils/reward-estimator";
 import { FEE_EPOCH_START, FEE_EPOCH_END } from "@/lib/constants/config";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 interface NetworkEconomicsProps {
   feeHistory: FeeHistory | undefined;
@@ -58,14 +57,12 @@ export function NetworkEconomics({ feeHistory, snapshot }: NetworkEconomicsProps
               ? "Declining"
               : "Stable"
           }
-          icon={
-            feeTrend?.direction === "growing" ? (
-              <TrendingUp className="size-4 text-green" />
-            ) : feeTrend?.direction === "declining" ? (
-              <TrendingDown className="size-4 text-red" />
-            ) : (
-              <Minus className="size-4 text-cream-30" />
-            )
+          valueClassName={
+            feeTrend?.direction === "growing"
+              ? "text-green"
+              : feeTrend?.direction === "declining"
+              ? "text-red"
+              : "text-cream-30"
           }
         />
       </div>
@@ -119,21 +116,18 @@ function MetricCard({
   label,
   value,
   note,
-  icon,
+  valueClassName,
 }: {
   label: string;
   value: string;
   note?: string;
-  icon?: React.ReactNode;
+  valueClassName?: string;
 }) {
   return (
     <Card className="bg-cream-5 border-cream-8">
       <CardContent className="pt-4 pb-4">
         <p className="text-xs text-cream-40 mb-1">{label}</p>
-        <div className="flex items-center gap-2">
-          {icon}
-          <p className="text-lg sm:text-xl font-display text-cream">{value}</p>
-        </div>
+        <p className={`text-lg sm:text-xl font-display ${valueClassName ?? "text-cream"}`}>{value}</p>
         {note && <p className="text-xs text-cream-20 mt-1">{note}</p>}
       </CardContent>
     </Card>
